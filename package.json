@@ -1,0 +1,22 @@
+{
+  "name": "services-web-chatbot",
+  "version": "1.0.0",
+  "description": "Projet de Mathias PENAVAIRE et Gurwan DELAUNAY",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Gurwan/Services-Web-ChatBot.git"
+  },
+  "author": "Mathias PENAVAIRE, Gurwan DELAUNAY",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Gurwan/Services-Web-ChatBot/issues"
+  },
+  "homepage": "https://github.com/Gurwan/Services-Web-ChatBot#readme",
+  "dependencies": {
+    "rivescript": "^2.2.1"
+  }
+}
