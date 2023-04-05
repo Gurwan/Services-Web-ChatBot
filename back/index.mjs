@@ -48,8 +48,20 @@ MongoClient.connect(url, function(err, db) {
 
 
 app.get('/',(req,res) => {
-    try {
-        let arrayBot;
-
-    }
 })
+
+app.post('/',(req,res)=>{
+
+    /*
+	let thePersonToAdd = req.body;
+	personServiceInstance
+		.addPerson(thePersonToAdd) 
+		.then((returnString)=>{
+			console.log(returnString);
+			res.status(201).send('All is OK');
+		})
+		.catch((err)=>{
+			console.log(`Error ${err} thrown... stack is : ${err.stack}`);
+			res.status(400).send('BAD REQUEST');
+		});*/	
+});
