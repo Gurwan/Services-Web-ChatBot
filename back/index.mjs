@@ -1,6 +1,7 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import RiveScript from 'rivescript';
 
 /// SWAGGER PART
 import swaggerJSDoc from 'swagger-jsdoc';
