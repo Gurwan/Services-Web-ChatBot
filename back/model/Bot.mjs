@@ -15,3 +15,5 @@ class Bot {
         });
     }
 }
+
+export {Bot}

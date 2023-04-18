@@ -4,6 +4,7 @@
   "description": "Projet de Mathias PENAVAIRE et Gurwan DELAUNAY",
   "main": "index.js",
   "scripts": {
+    "nodemon": "nodemon  index.mjs",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -17,8 +18,12 @@
   },
   "homepage": "https://github.com/Gurwan/Services-Web-ChatBot#readme",
   "dependencies": {
+    "cors": "^2.8.5",
     "express": "^4.18.2",
     "mongodb": "^5.1.0",
-    "rivescript": "^2.2.1"
+    "nodemon": "^2.0.22",
+    "rivescript": "^2.2.1",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^4.6.2"
   }
 }

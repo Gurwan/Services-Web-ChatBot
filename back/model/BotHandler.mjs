@@ -1,10 +1,10 @@
 import {Bot} from "./Bot.mjs";
-var MongoClient = require('mongodb').MongoClient;
+import {MongoClient} from 'mongodb';
 
 class BotHandler {
     constructor(){
         this.dbURL = "mongodb://localhost:27017/";
-        MongoClient.connect(url, function(err, db) {
+        MongoClient.connect(this.dbURL, function(err, db) {
             if (err) throw err;
             var dbo = db.db("mydb");
             dbo.createCollection("bots", function(err, res) {
@@ -41,7 +41,7 @@ class BotHandler {
 	}
 
 	getAllBots(){
-        arrayBots = []
+        let arrayBots = []
         MongoClient.connect(this.dbURL, function(err, db) {
             if (err) throw err;
             var dbo = db.db("mydb");
@@ -53,7 +53,7 @@ class BotHandler {
               db.close();
             });
           });
-		return this.array;
+		return arrayBots;
 	}
 }
 
