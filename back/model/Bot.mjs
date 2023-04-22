@@ -1,8 +1,8 @@
 class Bot {
     constructor(name,id,port) {
         this.name = name;
-        this.id = id++;
-        this.port = port++;
+        this.id = id;
+        this.port = port;
       }
     
       start() {

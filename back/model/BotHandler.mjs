@@ -4,34 +4,56 @@ import {MongoClient} from 'mongodb';
 class BotHandler {
     constructor(){
         this.dbURL = "mongodb://localhost:27017/";
-        MongoClient.connect(this.dbURL, function(err, db) {
-            if (err) throw err;
-            var dbo = db.db("mydb");
-            dbo.createCollection("bots", function(err, res) {
-                if (err) throw err;
-                console.log("La collection de bots a été crée");
-                db.close();
-            });
-        });
+        this.dbName = "penavaire_delaunay_bot";
+        this.client = new MongoClient(this.dbURL, { useNewUrlParser: true, useUnifiedTopology: true });
+        this.botsCollection = null;
     }
 
-    async createBot(bot){
-        MongoClient.connect(this.dbURL, function(err, db) {
-            if (err) throw err;
-            var dbo = db.db("mydb");
-            var newBot = { id: bot.id, name: bot.name, port: bot.port };
-            dbo.collection("bots").insertOne(newBot, function(err, res) {
+    async connectToDatabase(){
+        try {
+            await this.client.connect();
+            console.log("Connexion MongoDB établie !");
+            this.db = this.client.db(this.dbName);
+            this.db.listCollections({ name: "bots" }).next(function(err, collinfo) {
                 if (err) throw err;
-                console.log("Le bot a été crée");
-                db.close();
+        
+                if (collinfo) {
+                    console.log("La collection de bots existe déjà !");
+                    this.client.close();
+                    return;
+                }
+        
+                this.db.createCollection("bots", function(err, res) {
+                    if (err) {
+                        console.error("Erreur lors de la création de la collection de bots :", err);
+                        this.client.close();
+                        return;
+                    }
+                    console.log("La collection de bots a été créée !");
+                    this.client.close();
+                });
             });
+            this.botsCollection = this.db.collection("bots");
+        } catch (error) {
+            console.error("Erreur lors de la connexion MongoDB :", error);
+        }
+    }
+
+    async createBot(botName){
+        let newId = await this.getNextValue("idBot");
+        let newPort = await this.getNextValue("port");
+        const newBot = { id: newId, name: botName, port: newPort };
+        await this.botsCollection.insertOne(newBot, function(err, res) {
+                if (err) throw err;
+                this.client.close();
         });
+        return "Le bot " + newBot.name + " a été crée, il a pour id " + newBot.id + " et pour port " + newBot.port;
     }
 
     getBot(id){
 		MongoClient.connect(this.dbURL, function(err, db) {
             if (err) throw err;
-            var dbo = db.db("mydb");
+            var dbo = db.db("penavaire_delaunay_bot");
             dbo.collection("bots").findOne({id: id}, function(err,result) {
                 if (err) throw err;
                 db.close();
@@ -40,21 +62,34 @@ class BotHandler {
         })	
 	}
 
-	getAllBots(){
-        let arrayBots = []
-        MongoClient.connect(this.dbURL, function(err, db) {
-            if (err) throw err;
-            var dbo = db.db("mydb");
-            dbo.collection("bots").find({}).toArray(function(err, result) {
-              if (err) throw err;
-              result.forEach(element => {
-                    arrayBots.push(new Bot(element.name, element.id, element.port))
-              });
-              db.close();
-            });
-          });
-		return arrayBots;
-	}
+    async getNextValue(name) {
+        await this.client.connect();
+        const sequenceCollection = this.db.collection("counters");
+        let sequenceDocument = await sequenceCollection.findOne({ _id: name });
+        if (!sequenceDocument) {
+            if(name == "port"){
+                sequenceDocument = { _id: name, sequence_value: 3001 };
+            } else {
+                sequenceDocument = { _id: name, sequence_value: 0 };
+            }
+            await sequenceCollection.insertOne(sequenceDocument);
+        }
+        const result = await sequenceCollection.findOneAndUpdate(
+            { _id: name },
+            { $inc: { sequence_value: 1 } },
+            { returnOriginal: false }
+        );
+        //this.client.close();
+        return result.value.sequence_value;
+    }
+
+    async getAllBots(){
+        await this.client.connect();
+        let arrayBots = await this.botsCollection.find({}).toArray();
+        let result = arrayBots.map(element => new Bot(element.name, element.id, element.port));
+        this.client.close();
+        return result;
+    }
 }
 
 export {BotHandler}
