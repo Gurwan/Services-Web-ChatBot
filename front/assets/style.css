@@ -47,3 +47,18 @@
         margin-left: auto;
         background: #DDD
    }
+
+   #grid-container {
+     margin-top: 80px;
+     padding-left: 30px;
+     padding-right: 30px;
+   }
+
+   #div_form_add {
+     margin-top: 80px;
+     padding: 50px;
+   }
+
+   #submit_btn_add {
+     margin-left: 50px;
+   }

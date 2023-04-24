@@ -5,7 +5,72 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>TalkBot</title>
 	<!-- Liens vers les fichiers CSS de Flowbite -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="./assets/style.css">
+
+  <script>
+    document.addEventListener('DOMContentLoaded',init);
+
+    let botList;
+
+    function init(){
+      botList = document.getElementById("grid-container")
+
+      displayBots();
+    }
+
+    async function displayBots() {
+
+        let myHeaders = new Headers();
+        myHeaders.append('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
+        myHeaders.append('Accept', 'application/json');
+        myHeaders.append('Set-Cookie', 'passPhrase=Hop');
+
+        let myInit = { 
+          method: 'GET',
+                  headers: myHeaders,
+                  credentials: 'same-origin',
+                  mode: 'cors',
+                  cache: 'no-store' 
+              };
+
+        let myURL = `http://localhost:3000/`;
+
+        fetch(myURL,myInit)
+          .then((httpResponse)=>{
+            for(let field of httpResponse.headers){
+              console.log(`raw = ${field}`);
+            }	
+            return httpResponse.json()
+          })
+          .then((bots)=>{
+            for(let bot of bots){
+              const botElement = document.createElement("div");
+              botElement.classList.add("bg-gray-100", "p-4", "rounded-md");
+
+              const botName = document.createElement("h2");
+              botName.textContent = bot.name;
+              botName.classList.add("text-lg", "font-medium", "mb-2");
+
+              const botId = document.createElement("p");
+              botId.textContent = `ID: ${bot.id}`;
+
+              const botPort = document.createElement("p");
+              botPort.textContent = `Port: ${bot.port}`;
+
+              botElement.appendChild(botName);
+              botElement.appendChild(botId);
+              botElement.appendChild(botPort);
+
+              botList.appendChild(botElement);
+            }
+          })
+          .catch((err)=>{
+            console.log(`ERROR : ${err}`);
+          })
+      }
+    
+  </script>
 </head>
 <body>
 
@@ -37,84 +102,6 @@
 
   <div class="grid grid-cols-3 gap-4" id="grid-container">
   </div>
-
-
-  <script>
-
-    document.addEventListener('DOMContentLoaded',displayBots);
-
-    async function getBots() {
-      
-    }
-
-    async function displayBots() {
-      try {
-        let botsList = [];
-        let myHeaders = new Headers();
-        myHeaders.append('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
-        myHeaders.append('Accept', 'application/json');
-        myHeaders.append('Set-Cookie', 'passPhrase=Hop');
-
-        let myInit = { 
-          method: 'GET',
-                  headers: myHeaders,
-                  credentials: 'same-origin',
-                  mode: 'cors',
-                  cache: 'no-store' 
-              };
-
-        let myURL = `http://localhost:3000/`;
-
-        fetch(myURL,myInit)
-          .then((httpResponse)=>{
-            for(let field of httpResponse.headers){
-              console.log(`raw = ${field}`);
-            }	
-            return httpResponse.json()
-          })
-          .then((bots)=>{
-            for(let b of bots){
-              botsList.push(b);
-            }
-          })
-          .catch((err)=>{
-            console.log(`ERROR : ${err}`);
-          })
-      
-        const gridContainer = document.getElementById("grid-container");
-        console.log(botsList);
-
-        botsList.forEach((bot) => {
-          console.log("hello");
-          const botElement = document.createElement("div");
-          botElement.classList.add("bg-gray-100", "p-4", "rounded-md");
-
-          const botName = document.createElement("h2");
-          botName.textContent = bot.name;
-          botName.classList.add("text-lg", "font-medium", "mb-2");
-
-          const botId = document.createElement("p");
-          botId.textContent = `ID: ${bot.id}`;
-
-          const botPort = document.createElement("p");
-          botPort.textContent = `Port: ${bot.port}`;
-
-          botElement.appendChild(botName);
-          botElement.appendChild(botId);
-          botElement.appendChild(botPort);
-
-          gridContainer.appendChild(botElement);
-        });
-      } catch (err) {
-        console.error("Error while retrieving bots:", err);
-      }
-    }
-
-
-  </script>
-
-
-
 
 	<!-- Liens vers les fichiers JavaScript de Flowbite -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
