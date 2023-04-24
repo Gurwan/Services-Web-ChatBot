@@ -20,6 +20,9 @@
     }
 
     async function displayBots() {
+        while (botList.firstChild) {
+  				botList.removeChild(botList.firstChild);
+			  }
 
         let myHeaders = new Headers();
         myHeaders.append('Content-Type', 'application/x-www-form-urlencoded; charset=UTF-8');
@@ -46,7 +49,15 @@
           .then((bots)=>{
             for(let bot of bots){
               const botElement = document.createElement("div");
-              botElement.classList.add("bg-gray-100", "p-4", "rounded-md");
+              botElement.classList.add("bg-gray-100", "p-4", "rounded-md", "relative");
+
+              const deleteBtn = document.createElement("button");
+              deleteBtn.classList.add("absolute", "top-3", "right-2", "cursor-pointer");
+              deleteBtn.style.width = "25px"; // ajouter une largeur de 50px
+              deleteBtn.style.height = "25px"; // ajouter une hauteur de 50px
+              deleteBtn.style.backgroundImage = "url(assets/img/trash.svg)"; // ajouter l'image
+              deleteBtn.style.backgroundRepeat = "no-repeat"; // éviter la répétition de l'image
+              deleteBtn.addEventListener("click", () => deleteBot(bot.id));
 
               const botName = document.createElement("h2");
               botName.textContent = bot.name;
@@ -58,6 +69,7 @@
               const botPort = document.createElement("p");
               botPort.textContent = `Port: ${bot.port}`;
 
+              botElement.appendChild(deleteBtn);
               botElement.appendChild(botName);
               botElement.appendChild(botId);
               botElement.appendChild(botPort);
@@ -69,6 +81,32 @@
             console.log(`ERROR : ${err}`);
           })
       }
+
+      function deleteBot(id){
+        let myHeaders = new Headers();
+			  myHeaders.append('Content-Type', 'application/json');
+
+        let myInit = { 
+          method: 'DELETE',
+          headers: myHeaders,
+          mode: 'cors',
+          cache: 'default' 
+        };
+
+        let myURL = `http://localhost:3000/${id}`;
+        
+        fetch(myURL,myInit)
+          .then((httpResponse)=>{
+            return httpResponse.text()
+          })
+          .then((returnString)=>{
+            displayBots();
+            console.log(`${returnString}`)
+          })
+          .catch((err)=>{
+            console.log(`ERROR : ${err}`);
+          })		
+        }
     
   </script>
 </head>

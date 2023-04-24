@@ -50,17 +50,22 @@ class BotHandler {
         return "Le bot " + newBot.name + " a été crée, il a pour id " + newBot.id + " et pour port " + newBot.port;
     }
 
-    getBot(id){
-		MongoClient.connect(this.dbURL, function(err, db) {
-            if (err) throw err;
-            var dbo = db.db("penavaire_delaunay_bot");
-            dbo.collection("bots").findOne({id: id}, function(err,result) {
-                if (err) throw err;
-                db.close();
-                return new Bot(result.name,result.id,result.port);
-            })
-        })	
-	}
+    async getBot(idBot) {
+        idBot = parseInt(idBot);
+        try {
+          await this.client.connect();
+          const bot = await this.botsCollection.findOne({ id: idBot });
+          if (!bot) {
+            console.log(`Bot avec ID ${idBot} n'a pas été trouvé.`);
+            return null;
+          }
+          const result = new Bot(bot.name, bot.id, bot.port);
+          return result;
+        } catch (error) {
+          console.error(error);
+          throw error;
+        }
+      }
 
     async getNextValue(name) {
         await this.client.connect();
@@ -87,9 +92,32 @@ class BotHandler {
         await this.client.connect();
         let arrayBots = await this.botsCollection.find({}).toArray();
         let result = arrayBots.map(element => new Bot(element.name, element.id, element.port));
-        this.client.close();
         return result;
     }
+
+    async removeBot(idBot){
+        let ret = "";
+        idBot = parseInt(idBot);
+        try {
+            await this.client.connect();
+            const bot = await this.getBot(idBot);
+            if(bot !== null){
+                const result = await this.botsCollection.deleteOne({ id: idBot });
+                if (result.deletedCount === 1) {
+                    ret = `Bot avec id ${idBot} supprimé avec succès.`;
+                } else {
+                    ret = `La suppression du bot avec id ${idBot} a échoué.`;
+                }
+            } else {
+                ret = `La suppression du bot avec id ${idBot} est impossible car ce bot n'existe pas.`;
+            }
+        } catch (err) {
+            console.error("Erreur lors de la suppression du bot : " + err);
+        } finally {
+            await this.client.close();
+        }
+        return ret;
+	}
 }
 
 export {BotHandler}

@@ -61,16 +61,39 @@ app.post('/',(req,res)=>{
 		.createBot(newBot) 
 		.then((returnString)=>{
 			console.log(returnString);
-			res.status(201).send('All is OK');
+			res.status(201).json({message: 'All is OK'});
 		})
 		.catch((err)=>{
 			console.log(`Error ${err} thrown... stack is : ${err.stack}`);
-			res.status(400).send('BAD REQUEST');
+			res.status(400).json({message: 'BAD REQUEST'});
 		});
+});
+
+app.delete('/:id',(req,res) => {
+	let id = req.params.id;
+
+	if(!isInt(id)) {
+		res.status(400).send('BAD REQUEST');
+	} else {
+		botHandler
+			.removeBot(id)
+			.then((returnString)=>{
+				console.log(returnString);
+				res.status(201).send('All is OK');
+			})
+			.catch((err)=>{
+				console.log(`Error ${err} thrown... stack is : ${err.stack}`);
+				res.status(400).send('BAD REQUEST');
+			});	
+	}		
 });
 
 app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`)
 });
 
+function isInt(value) {
+	let x = parseFloat(value);
+	return !isNaN(value) && (x | 0) === x;
+}
 
