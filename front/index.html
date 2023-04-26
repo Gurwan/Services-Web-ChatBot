@@ -52,12 +52,21 @@
               botElement.classList.add("bg-gray-100", "p-4", "rounded-md", "relative");
 
               const deleteBtn = document.createElement("button");
-              deleteBtn.classList.add("absolute", "top-3", "right-2", "cursor-pointer");
+              deleteBtn.classList.add("absolute", "bottom-2", "right-2", "cursor-pointer");
               deleteBtn.style.width = "25px"; // ajouter une largeur de 50px
               deleteBtn.style.height = "25px"; // ajouter une hauteur de 50px
               deleteBtn.style.backgroundImage = "url(assets/img/trash.svg)"; // ajouter l'image
               deleteBtn.style.backgroundRepeat = "no-repeat"; // éviter la répétition de l'image
               deleteBtn.addEventListener("click", () => deleteBot(bot.id));
+
+              const startBtn = document.createElement("button");
+              startBtn.classList.add("absolute", "top-5", "right-2", "cursor-pointer");
+              startBtn.id = "start-btn-" + bot.id
+              startBtn.style.width = "25px"; // ajouter une largeur de 50px
+              startBtn.style.height = "25px"; // ajouter une hauteur de 50px
+              startBtn.style.backgroundImage = "url(assets/img/start.svg)"; // ajouter l'image
+              startBtn.style.backgroundRepeat = "no-repeat"; // éviter la répétition de l'image
+              startBtn.addEventListener("click", () => startBot(bot.id));
 
               const botName = document.createElement("h2");
               botName.textContent = bot.name;
@@ -69,6 +78,7 @@
               const botPort = document.createElement("p");
               botPort.textContent = `Port: ${bot.port}`;
 
+              botElement.appendChild(startBtn);
               botElement.appendChild(deleteBtn);
               botElement.appendChild(botName);
               botElement.appendChild(botId);
@@ -106,6 +116,28 @@
           .catch((err)=>{
             console.log(`ERROR : ${err}`);
           })		
+        }
+
+        function startBot(id) {
+            const btn = document.getElementById(`start-btn-${id}`);
+            fetch(`http://localhost:3000/start-stop/${id}`, { method: 'POST' })
+                .then(response => {
+                    if (response.ok) {
+                        response.text().then(returnString => {
+                            console.log(`${returnString}`)
+                            if (returnString === 'Bot started') {
+                                btn.style.backgroundImage = "url(assets/img/stop.svg)";
+                            } else {
+                                btn.style.backgroundImage = "url(assets/img/start.svg)";
+                            }
+                        });
+                    } else {
+                        alert('Error: ' + response.statusText);
+                    }
+                })
+                .catch(error => {
+                    alert('Error: ' + error.message);
+                });
         }
     
   </script>

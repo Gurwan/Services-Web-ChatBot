@@ -3,7 +3,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import RiveScript from 'rivescript';
 
-import {MongoClient} from 'mongodb';
+import {MongoClient, MongoParseError} from 'mongodb';
 import {BotHandler} from "./model/BotHandler.mjs";
 
 
@@ -35,6 +35,8 @@ const options = {
 const swaggerSpec = swaggerJSDoc(options);
 const botHandler = new BotHandler();
 await botHandler.connectToDatabase();
+
+const serverMap = new Map();
 
 const app = express();
 app.use(cors()); // Enable ALL CORS request
@@ -68,6 +70,34 @@ app.post('/',(req,res)=>{
 			res.status(400).json({message: 'BAD REQUEST'});
 		});
 });
+
+app.post('/start-stop/:id', async (req,res) => {
+	let id = req.params.id;
+	let botToStart = await botHandler.getBot(id);
+
+	if(botToStart == null){
+		res.status(404).send("Ce bot n'existe pas");
+		return
+	}
+
+	const serverToClose = serverMap.get(id);
+	if(serverToClose){
+		serverToClose.close(() => {
+			console.log(`Le bot ` + botToStart.name + " a été arrêté sur le port : " + botToStart.port);
+			serverMap.delete(id);
+			res.status(201).send('Bot stopped');
+		})
+	} else {
+		const server = app.listen(botToStart.port, () => {
+			console.log(`Le bot ` + botToStart.name + " a été démarré sur le port : " + botToStart.port);
+			res.status(201).send('Bot started');
+		})
+	
+		serverMap.set(id,server);
+	}
+
+
+})
 
 app.delete('/:id',(req,res) => {
 	let id = req.params.id;
