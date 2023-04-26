@@ -39,6 +39,14 @@
 
         let myURL = `http://localhost:3000/`;
 
+        let riveBrains = null;
+
+        await fetch(myURL+'get-brains')
+          .then(response => response.json()) // Convertir la réponse en objet JSON
+          .then(riveFiles => {
+            riveBrains = riveFiles;
+        });
+
         fetch(myURL,myInit)
           .then((httpResponse)=>{
             for(let field of httpResponse.headers){
@@ -78,11 +86,36 @@
               const botPort = document.createElement("p");
               botPort.textContent = `Port: ${bot.port}`;
 
+              const labelBrain = document.createElement("p");
+              labelBrain.textContent = `Cerveau(x):`; 
+
+              const botBrains = document.createElement("div");
+              botBrains.classList.add("botBrains-div")
+              for(b of riveBrains){
+                const input = document.createElement("input")
+                input.type = 'checkbox';
+                input.name = 'brainFiles';
+                input.value = b;
+                if(bot.brain.includes(b)){
+                  input.checked = true;
+                }
+
+                input.addEventListener('change', () => changeBrainChoice(bot.id,input));
+
+                const label = document.createElement('label');
+                label.classList.add("label-brain")
+                label.appendChild(input);
+                label.appendChild(document.createTextNode(`${b}`))
+                botBrains.appendChild(label)
+              }
+
               botElement.appendChild(startBtn);
               botElement.appendChild(deleteBtn);
               botElement.appendChild(botName);
               botElement.appendChild(botId);
               botElement.appendChild(botPort);
+              botElement.appendChild(labelBrain);
+              botElement.appendChild(botBrains);
 
               botElement.addEventListener("dblclick", () => {
                 window.open(`chat.html`, 'Conversation Rive');
@@ -94,6 +127,25 @@
           .catch((err)=>{
             console.log(`ERROR : ${err}`);
           })
+      }
+
+      function changeBrainChoice(idBot,input){
+        const brain = input.value;
+        if (input.checked) {
+          fetch(`http://localhost:3000/add-brain/${idBot}/${brain}`, {
+            method: 'POST'
+          })
+          .then((response) => response.json())
+          .then((data) => console.log(data))
+          .catch((error) => console.error(error));
+        } else {
+          fetch(`http://localhost:3000/remove-brain/${idBot}/${brain}`, {
+            method: 'DELETE'
+          })
+          .then((response) => response.json())
+          .then((data) => console.log(data))
+          .catch((error) => console.error(error));
+        }
       }
 
       function deleteBot(id){

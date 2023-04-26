@@ -2,7 +2,6 @@ let bot = new RiveScript();
 
 const brains = [
     './brain.rive'
- // "./another-category-sample.rive
 ];
 
 bot.loadFile(brains).then(botReady).catch(botNotReady);

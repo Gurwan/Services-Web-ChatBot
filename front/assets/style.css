@@ -62,3 +62,17 @@
    #submit_btn_add {
      margin-left: 50px;
    }
+
+   .botBrains-div {
+     width: 200px;
+     max-height: 100px;
+     overflow-y: auto;
+     display: flex;
+     align-items: center;
+     flex-wrap: wrap;
+     margin-bottom: 8px;
+   }
+
+   .label-brain {
+     flex-basis: 100%;
+   }

@@ -1,6 +1,9 @@
 import express from 'express';
 import bodyParser from 'body-parser';
 import cors from 'cors';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import RiveScript from 'rivescript';
 
 import {MongoClient, MongoParseError} from 'mongodb';
@@ -46,6 +49,9 @@ const port = 3000
 app.use(bodyParser.json()) 
 app.use(bodyParser.urlencoded({ extended: true })) 
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const folderBrains = path.join(__dirname, '../front/brains');
+
 app.get('/', async (req,res) => {
 	try{
 		let arrayBots = await botHandler.getAllBots();
@@ -55,6 +61,18 @@ app.get('/', async (req,res) => {
 		console.log(`Error ${err} thrown... stack is : ${err.stack}`);
 		res.status(404).send('NOT FOUND');
 	}
+})
+
+app.get('/get-brains', (req, res) => {
+	fs.readdir(folderBrains, (err, files) => {
+		if (err) {
+		  console.error(`Erreur lors de la lecture du dossier "${folderBrains}" : ${err.message}`);
+		  return res.status(500).send('Erreur lors de la lecture du dossier "brains".');
+		}
+	
+		// Retourner la liste des fichiers au format JSON
+		res.json(files.filter(file => file.endsWith('.rive')));
+	});
 })
 
 app.post('/',(req,res)=>{
@@ -95,8 +113,38 @@ app.post('/start-stop/:id', async (req,res) => {
 	
 		serverMap.set(id,server);
 	}
+})
 
+app.post('/add-brain/:id/:brain', async (req,res) => {
+	const id = req.params.id;
+	const brain = req.params.brain;
 
+	botHandler
+		.addBrain(id,brain)
+		.then((returnString)=>{
+			console.log(returnString);
+			res.status(201).json({message: 'All is OK'});
+		})
+		.catch((err)=>{
+			console.log(`Error ${err} thrown... stack is : ${err.stack}`);
+			res.status(400).json({message: 'BAD REQUEST'});
+		});
+})
+
+app.delete('/remove-brain/:id/:brain', async (req,res) => {
+	const id = req.params.id;
+	const brain = req.params.brain;
+
+	botHandler
+		.removeBrain(id,brain)
+		.then((returnString)=>{
+			console.log(returnString);
+			res.status(201).json({message: 'All is OK'});
+		})
+		.catch((err)=>{
+			console.log(`Error ${err} thrown... stack is : ${err.stack}`);
+			res.status(400).json({message: 'BAD REQUEST'});
+		});
 })
 
 app.delete('/:id',(req,res) => {

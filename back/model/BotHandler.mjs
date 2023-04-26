@@ -42,7 +42,7 @@ class BotHandler {
     async createBot(botName){
         let newId = await this.getNextValue("idBot");
         let newPort = await this.getNextValue("port");
-        const newBot = { id: newId, name: botName, port: newPort };
+        const newBot = { id: newId, name: botName, port: newPort, brain: ['standard.rive'] };
         await this.botsCollection.insertOne(newBot, function(err, res) {
                 if (err) throw err;
                 this.client.close();
@@ -59,13 +59,37 @@ class BotHandler {
             console.log(`Bot avec ID ${idBot} n'a pas été trouvé.`);
             return null;
           }
-          const result = new Bot(bot.name, bot.id, bot.port);
+          const result = new Bot(bot.name, bot.id, bot.port, bot.brain);
           return result;
         } catch (error) {
           console.error(error);
           throw error;
         }
-      }
+    }
+
+    async addBrain(idBot,brain){
+        idBot = parseInt(idBot);
+        await this.client.connect();
+        const res = await this.botsCollection.updateOne({ id: idBot }, {$addToSet: {brain:brain}});
+        if (res.modifiedCount === 1) {
+            return `Le cerveau ${brain} a été ajouté au bot ${idBot}`;
+        } else {
+            return `L'ajout du cerveau ${brain} au bot ${idBot} a échoué`;
+        }
+    }
+
+    async removeBrain(idBot,brain){
+        idBot = parseInt(idBot);
+        await this.client.connect();
+        const bot = await this.getBot(idBot);
+        const updatedBrains = bot.brain.filter((b) => b !== brain);
+        const res = await this.botsCollection.updateOne({ id: idBot }, {$set: {brain:updatedBrains}});
+        if (res.modifiedCount === 1) {
+            return `Le cerveau ${brain} a été supprimé du bot ${idBot}`;
+        } else {
+            return `La suppression du cerveau ${brain} au bot ${idBot} a échoué`;
+        }
+    }
 
     async getNextValue(name) {
         await this.client.connect();
@@ -91,7 +115,7 @@ class BotHandler {
     async getAllBots(){
         await this.client.connect();
         let arrayBots = await this.botsCollection.find({}).toArray();
-        let result = arrayBots.map(element => new Bot(element.name, element.id, element.port));
+        let result = arrayBots.map(element => new Bot(element.name, element.id, element.port, element.brain));
         return result;
     }
 
