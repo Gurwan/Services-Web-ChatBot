@@ -84,6 +84,10 @@
               botElement.appendChild(botId);
               botElement.appendChild(botPort);
 
+              botElement.addEventListener("dblclick", () => {
+                window.open(`chat.html`, 'Conversation Rive');
+              })
+
               botList.appendChild(botElement);
             }
           })
