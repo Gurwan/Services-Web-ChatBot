@@ -18,6 +18,51 @@
       </form>     </div>
  
     <script src="https://unpkg.com/rivescript@latest/dist/rivescript.min.js"></script>
-    <script src="./mouth.js"></script>
-</body>
+    <script>
+      const inputField = document.querySelector('.actions input');
+      const edgeElement = document.getElementById('edge');
+
+      inputField.focus();
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const port = urlParams.get("port"); // Récupération du numéro de port depuis l'URL
+      
+      const serverUrl = `http://localhost:${port}`;
+      const messages = document.querySelector('.messages');
+      const input = document.querySelector('input[type="text"]');
+
+      // Envoie le message au bot
+      const sendMessage = async (message) => {
+          const response = await fetch(`${serverUrl}/message/${message}`);
+          const reply = await response.text();
+          const messageHtml = `<div class="self">${message}</div><div class="bot">${reply}</div>`;
+          edgeElement.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
+          window.scrollBy(0, -inputField.offsetHeight); // défilement vers le haut pour compenser le focus sur l'élément input
+          inputField.focus();
+          messages.insertAdjacentHTML('beforeend', messageHtml);
+          messages.scrollTop = messages.scrollHeight;
+      }
+
+      // Pour éviter que les espaces ne fassent échouer le dialogue
+      const handleSubmit = (event) => {
+          event.preventDefault();
+          const message = input.value.trim();
+          if (message !== '') {
+              sendMessage(message);
+              input.value = '';
+          }
+      };
+
+      // Événement soumis lorsque la touche Entrée est enfoncée dans l'entrée de texte
+      const handleKeyDown = (event) => {
+          if (event.key === 'Enter') {
+              handleSubmit(event);
+          }
+      };
+
+      // Ajoute les événements pour envoyer les messages
+      input.addEventListener('keydown', handleKeyDown);
+      document.querySelector('.actions').addEventListener('submit', handleSubmit);
+  </script>
+  </body>
 </html>

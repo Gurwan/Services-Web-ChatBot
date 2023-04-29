@@ -70,9 +70,10 @@
               const startBtn = document.createElement("button");
               startBtn.classList.add("absolute", "top-5", "right-2", "cursor-pointer");
               startBtn.id = "start-btn-" + bot.id
+              startBtn.style.backgroundImage = "url(assets/img/start.svg)"; // ajouter l'image
               startBtn.style.width = "25px"; // ajouter une largeur de 50px
               startBtn.style.height = "25px"; // ajouter une hauteur de 50px
-              startBtn.style.backgroundImage = "url(assets/img/start.svg)"; // ajouter l'image
+
               startBtn.style.backgroundRepeat = "no-repeat"; // éviter la répétition de l'image
               startBtn.addEventListener("click", () => startBot(bot.id));
 
@@ -118,7 +119,24 @@
               botElement.appendChild(botBrains);
 
               botElement.addEventListener("dblclick", () => {
-                window.open(`chat.html`, 'Conversation Rive');
+                fetch('http://localhost:3000/get-state-bot/' + bot.id, {
+                  method: 'GET',
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    if(data){
+                      fetch(`http://localhost:${bot.port}/load-brain/`, {
+                        method: 'GET'
+                      })
+                      .then((response) => response.json())
+                      .then((data) => console.log(data))
+                      .catch((error) => console.error(error));
+                      window.open(`chat.html?port=${bot.port}`, `Conversation avec ${bot.name}`);
+                    } else {
+                      alert(`Il faut démarrer le bot ${bot.name} avant d'ouvrir la conversation avec lui`)
+                    }
+                  })
+                  .catch(error => console.error(error));
               })
 
               botList.appendChild(botElement);

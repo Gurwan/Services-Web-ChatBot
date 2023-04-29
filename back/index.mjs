@@ -76,6 +76,23 @@ app.get('/get-brains', (req, res) => {
 	});
 })
 
+app.get('/get-state-bot/:id', async (req, res) => {
+	let id = req.params.id;
+	let botToExam = await botHandler.getBot(id);
+
+	if(botToExam == null){
+		res.status(404).send(false);
+		return
+	}
+
+	const server = serverMap.get(id);
+	if(server){
+		res.status(201).send(true);
+	} else {
+		res.status(201).send(false);
+	}
+})
+
 app.post('/',(req,res)=>{
 	let newBot = req.body.name;
 	botHandler
@@ -111,11 +128,30 @@ app.post('/start-stop/:id', async (req,res) => {
 		const server = app.listen(botToStart.port, () => {
 			console.log(`Le bot ` + botToStart.name + " a été démarré sur le port : " + botToStart.port);
 
-			app.get('/message/:message', (req, res) => {
+			app.get('/message/:message', async (req, res) => {
 				const message = req.params.message;
-				const reply = riveScriptMap.get(id).reply('local-user', message);
+				riveScriptMap.get(id).sortReplies();
+				const reply = await riveScriptMap.get(id).reply('local-user', message);
 				res.send(reply);
 			  });
+
+			app.get('/load-brain', async (req,res) => {
+				const bot = await botHandler.getBot(id);
+				const botRivescript = riveScriptMap.get(id);
+				bot.brain.forEach(br => {
+					const brPath = `${folderBrains}/${br}`;
+					botRivescript
+						.loadFile(brPath)
+						.then(() => {
+							console.log(`Le cerveau du bot ${bot.name} a été chargé avec ${brPath}`);
+							res.status(201).send('Bot brain loaded');
+						})
+						.catch((err) => {
+							res.status(400).send('Bot brain failed');
+						});
+				})
+				botRivescript.sortReplies();
+			})
 
 			res.status(201).send('Bot started');
 		})
@@ -129,18 +165,13 @@ app.post('/add-brain/:id/:brain', async (req,res) => {
 	const id = req.params.id;
 	const brain = req.params.brain;
 
-	const bot = await botHandler.getBot(id);
-	bot.brain.push(brain)
-
 	botHandler
 		.addBrain(id,brain)
-		.then((returnString)=>{
-			const botRivescript = riveScriptMap.get(id);
-			botRivescript.loadDirectory(bot.brain, () => {
-				console.log(`Le cerveau du bot ${bot.name}! a été chargé`);
-				botRivescript.sortReplies();
-			})
+		.then(async (returnString)=>{
 			console.log(returnString);
+			if(serverMap.get(id)){
+				//await serverMap.get(id).reloadBrain();
+			}
 			res.status(201).json({message: 'All is OK'});
 		})
 		.catch((err)=>{
@@ -153,22 +184,13 @@ app.delete('/remove-brain/:id/:brain', async (req,res) => {
 	const id = req.params.id;
 	const brain = req.params.brain;
 
-	const bot = await botHandler.getBot(id);
-
-	const index = bot.brain.indexOf(brain);
-	if (index !== -1) {
-		bot.brain.splice(index,1)
-	}
-
 	botHandler
 		.removeBrain(id,brain)
-		.then((returnString)=>{
-			const botRivescript = riveScriptMap.get(id);
-			botRivescript.loadDirectory(bot.brain, () => {
-				console.log(`Le cerveau du bot ${bot.name}! a été chargé`);
-				botRivescript.sortReplies();
-			})
+		.then(async (returnString)=>{				
 			console.log(returnString);
+			if(serverMap.get(id)){
+				//await serverMap.get(id).reloadBrain();
+			}
 			res.status(201).json({message: 'All is OK'});
 		})
 		.catch((err)=>{
