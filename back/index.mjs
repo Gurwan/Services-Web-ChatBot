@@ -40,6 +40,7 @@ const botHandler = new BotHandler();
 await botHandler.connectToDatabase();
 
 const serverMap = new Map();
+const riveScriptMap = new Map();
 
 const app = express();
 app.use(cors()); // Enable ALL CORS request
@@ -103,15 +104,24 @@ app.post('/start-stop/:id', async (req,res) => {
 		serverToClose.close(() => {
 			console.log(`Le bot ` + botToStart.name + " a été arrêté sur le port : " + botToStart.port);
 			serverMap.delete(id);
+			riveScriptMap.delete(id);
 			res.status(201).send('Bot stopped');
 		})
 	} else {
 		const server = app.listen(botToStart.port, () => {
 			console.log(`Le bot ` + botToStart.name + " a été démarré sur le port : " + botToStart.port);
+
+			app.get('/message/:message', (req, res) => {
+				const message = req.params.message;
+				const reply = riveScriptMap.get(id).reply('local-user', message);
+				res.send(reply);
+			  });
+
 			res.status(201).send('Bot started');
 		})
 	
 		serverMap.set(id,server);
+		riveScriptMap.set(id,new RiveScript());
 	}
 })
 
@@ -119,9 +129,17 @@ app.post('/add-brain/:id/:brain', async (req,res) => {
 	const id = req.params.id;
 	const brain = req.params.brain;
 
+	const bot = await botHandler.getBot(id);
+	bot.brain.push(brain)
+
 	botHandler
 		.addBrain(id,brain)
 		.then((returnString)=>{
+			const botRivescript = riveScriptMap.get(id);
+			botRivescript.loadDirectory(bot.brain, () => {
+				console.log(`Le cerveau du bot ${bot.name}! a été chargé`);
+				botRivescript.sortReplies();
+			})
 			console.log(returnString);
 			res.status(201).json({message: 'All is OK'});
 		})
@@ -135,9 +153,21 @@ app.delete('/remove-brain/:id/:brain', async (req,res) => {
 	const id = req.params.id;
 	const brain = req.params.brain;
 
+	const bot = await botHandler.getBot(id);
+
+	const index = bot.brain.indexOf(brain);
+	if (index !== -1) {
+		bot.brain.splice(index,1)
+	}
+
 	botHandler
 		.removeBrain(id,brain)
 		.then((returnString)=>{
+			const botRivescript = riveScriptMap.get(id);
+			botRivescript.loadDirectory(bot.brain, () => {
+				console.log(`Le cerveau du bot ${bot.name}! a été chargé`);
+				botRivescript.sortReplies();
+			})
 			console.log(returnString);
 			res.status(201).json({message: 'All is OK'});
 		})
