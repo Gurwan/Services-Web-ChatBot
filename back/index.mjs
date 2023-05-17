@@ -1,4 +1,6 @@
 import express from 'express';
+import session from 'express-session';
+import flash from'express-flash';
 import bodyParser from 'body-parser';
 import cors from 'cors';
 import fs from 'fs';
@@ -47,13 +49,26 @@ app.use(cors()); // Enable ALL CORS request
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec)); //Swagger Middleware to produce doc
 const port = 3000
 
-app.use(bodyParser.json()) 
-app.use(bodyParser.urlencoded({ extended: true })) 
+app.set('view engine', 'ejs');
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+app.set('views', path.join(__dirname, '../front/views')); // Définir le chemin des vues
+
+app.use(express.static(path.join(__dirname, '../front/assets'))); 
+
+app.use(session({
+	secret: 'bot_secret_key',
+	resave: false,
+	saveUninitialized: true
+}));
+app.use(flash());
+
+app.use(bodyParser.json()) 
+app.use(bodyParser.urlencoded({ extended: true })) 
 const folderBrains = path.join(__dirname, '../front/brains');
 
-app.get('/', async (req,res) => {
+app.get('/get-all-bots', async (req,res) => {
 	try{
 		let arrayBots = await botHandler.getAllBots();
 		res.status(200).json(arrayBots);
@@ -137,17 +152,15 @@ app.post('/start-stop/:id', async (req,res) => {
 
 			app.get('/load-brain', async (req,res) => {
 				const bot = await botHandler.getBot(id);
-				const botRivescript = riveScriptMap.get(id);
+				const botRivescript = riveScriptMap.get(id);                            
 				bot.brain.forEach(br => {
 					const brPath = `${folderBrains}/${br}`;
 					botRivescript
 						.loadFile(brPath)
 						.then(() => {
 							console.log(`Le cerveau du bot ${bot.name} a été chargé avec ${brPath}`);
-							res.status(201).send('Bot brain loaded');
 						})
 						.catch((err) => {
-							res.status(400).send('Bot brain failed');
 						});
 				})
 				botRivescript.sortReplies();
@@ -216,6 +229,27 @@ app.delete('/:id',(req,res) => {
 				res.status(400).send('BAD REQUEST');
 			});	
 	}		
+});
+
+app.get('/login', (req, res) => {
+	res.render('login'); 
+});
+  
+app.post('/login', (req, res) => {
+	const { username, password } = req.body;
+  
+	if (username === 'votre_utilisateur' && password === 'votre_mot_de_passe') {
+	  req.session.connected = true;
+	  res.redirect('/');
+	} else {
+	  req.flash('error', 'Identifiants invalides'); // Affichez un message d'erreur sur la page de connexion
+	  res.redirect('/login');
+	}
+});
+
+app.get('/logout', (req, res) => {
+	req.session.destroy();
+	res.redirect('/login');
 });
 
 app.listen(port, () => {
