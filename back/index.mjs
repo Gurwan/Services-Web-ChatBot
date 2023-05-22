@@ -24,7 +24,7 @@ const swaggerDefinition = {
     description: '',
   	servers:[
   		{
-  			url:'http://localhost:3000',
+  			url:'http://localhost:2999',
   			description:'Development server',
   		},
   	],
@@ -232,24 +232,38 @@ app.delete('/:id',(req,res) => {
 });
 
 app.get('/login', (req, res) => {
-	res.render('login'); 
+	res.sendFile(path.join(__dirname, '../front/views/login.html'));
+});
+
+app.get('/', (req, res) => {
+	res.sendFile(path.join(__dirname, '../front/views/index.html'));
 });
   
+app.get('/add_bot', (req, res) => {
+	res.sendFile(path.join(__dirname, '../front/views/add_bot.html'));
+});
+
 app.post('/login', (req, res) => {
 	const { username, password } = req.body;
-  
+
 	if (username === 'votre_utilisateur' && password === 'votre_mot_de_passe') {
-	  req.session.connected = true;
-	  res.redirect('/');
+		req.session.connected = true;
+	  	req.session.username = username;
+	  	res.status(200).send({ success: true });
 	} else {
-	  req.flash('error', 'Identifiants invalides'); // Affichez un message d'erreur sur la page de connexion
-	  res.redirect('/login');
+		res.status(401).send({ success: false, message: 'Identifiants invalides' });
 	}
 });
 
-app.get('/logout', (req, res) => {
-	req.session.destroy();
-	res.redirect('/login');
+app.post('/logout', (req, res) => {
+	req.session.destroy((err) => {
+	  if (err) {
+		console.error('Erreur lors de la déconnexion :', err);
+	  } else {
+		res.clearCookie('connect.sid'); 
+		res.status(200).send({ success: true });
+	}
+	});
 });
 
 app.listen(port, () => {
