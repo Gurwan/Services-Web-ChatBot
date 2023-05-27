@@ -131,7 +131,7 @@
                       .then((response) => response.json())
                       .then((data) => console.log(data))
                       .catch((error) => console.error(error));
-                      window.open(`chat.html?port=${bot.port}`, `Conversation avec ${bot.name}`);
+                      window.open(`chat/${bot.port}`, `Conversation avec ${bot.name}`);
                     } else {
                       alert(`Il faut démarrer le bot ${bot.name} avant d'ouvrir la conversation avec lui`)
                     }
@@ -200,9 +200,9 @@
                         response.text().then(returnString => {
                             console.log(`${returnString}`)
                             if (returnString === 'Bot started') {
-                                btn.style.backgroundImage = "url(assets/img/stop.svg)";
+                                btn.style.backgroundImage = "url('/assets/img/stop.svg')";
                             } else {
-                                btn.style.backgroundImage = "url(assets/img/start.svg)";
+                                btn.style.backgroundImage = "url('/assets/img/start.svg')";
                             }
                         });
                     } else {

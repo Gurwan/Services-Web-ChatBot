@@ -55,7 +55,8 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 app.set('views', path.join(__dirname, '../front/views')); // Définir le chemin des vues
 
-app.use(express.static(path.join(__dirname, '../front/assets'))); 
+const assetsPath = path.join(__dirname, '../front/assets');
+app.use('/assets', express.static(assetsPath));
 
 app.use(session({
 	secret: 'bot_secret_key',
@@ -234,6 +235,21 @@ app.delete('/:id',(req,res) => {
 app.get('/login', (req, res) => {
 	res.sendFile(path.join(__dirname, '../front/views/login.html'));
 });
+
+app.get('/chat/:port', (req, res) => {
+	const { port } = req.params;
+	const filePath = path.join(__dirname, '../front/views/chat.html');
+  
+	fs.readFile(filePath, 'utf8', (err, data) => {
+	  if (err) {
+		console.error('Erreur lors de la lecture du fichier HTML:', err);
+		return res.status(500).send('Erreur interne du serveur');
+	  }
+  	  const modifiedData = data.replace('{{port}}', port);
+  
+	  res.send(modifiedData);
+	});
+}); 
 
 app.get('/', (req, res) => {
 	res.sendFile(path.join(__dirname, '../front/views/index.html'));
