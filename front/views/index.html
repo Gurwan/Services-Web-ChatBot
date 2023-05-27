@@ -70,7 +70,23 @@
               const startBtn = document.createElement("button");
               startBtn.classList.add("absolute", "top-5", "right-2", "cursor-pointer");
               startBtn.id = "start-btn-" + bot.id
-              startBtn.style.backgroundImage = "url(assets/img/start.svg)"; // ajouter l'image
+
+              fetch(`http://localhost:3000/checkServer/${bot.id}`)
+                .then(response => response.json())
+                .then(data => {
+                  const serverExists = data.exists;
+
+                  if (serverExists) {
+                    startBtn.style.backgroundImage = "url(assets/img/stop.svg)"; // ajouter l'image
+                  } else {
+                    startBtn.style.backgroundImage = "url(assets/img/start.svg)"; // ajouter l'image
+                  }
+                })
+                .catch(error => {
+                  console.error('Une erreur s\'est produite lors de la vérification du serveur :', error);
+                });
+
+
               startBtn.style.width = "25px"; // ajouter une largeur de 50px
               startBtn.style.height = "25px"; // ajouter une hauteur de 50px
 

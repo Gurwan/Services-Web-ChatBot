@@ -44,6 +44,8 @@ app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({ extended: true })) 
 const folderBrains = path.join(__dirname, '../front/brains');
 
+var username_connected = null
+
 app.get('/get-all-bots', async (req,res) => {
 	try{
 		let arrayBots = await botHandler.getAllBots();
@@ -122,9 +124,12 @@ app.post('/start-stop/:id', async (req,res) => {
 			app.get('/message/:message', async (req, res) => {
 				const message = req.params.message;
 				riveScriptMap.get(id).sortReplies();
+
+				console.log(username_connected)
+
 				const reply = await riveScriptMap.get(id).reply('local-user', message);
 				res.send(reply);
-			  });
+			});
 
 			app.get('/load-brain', async (req,res) => {
 				const bot = await botHandler.getBot(id);
@@ -149,6 +154,12 @@ app.post('/start-stop/:id', async (req,res) => {
 		riveScriptMap.set(id,new RiveScript());
 	}
 })
+
+app.get('/checkServer/:id', (req, res) => {
+	const id = req.params.id;
+	const serverExists = serverMap.has(id);
+	res.json({ exists: serverExists });
+});
 
 app.post('/add-brain/:id/:brain', async (req,res) => {
 	const id = req.params.id;
@@ -250,6 +261,7 @@ app.post('/login', async (req, res) => {
 	
 	if (match) {
 		req.session.connected = true;
+		username_connected = username;
 	  	req.session.username = username;
 	  	res.status(200).send({ success: true });
 	} else {
@@ -280,14 +292,24 @@ app.post('/logout', (req, res) => {
 	  if (err) {
 		console.error('Erreur lors de la déconnexion :', err);
 	  } else {
+		username_connected = null;
 		res.clearCookie('connect.sid'); 
 		res.status(200).send({ success: true });
 	}
 	});
 });
 
-app.listen(port, () => {
+const mainServer = app.listen(port, () => {
 	console.log(`Example app listening at http://localhost:${port}`)
+});
+
+mainServer.on('close', () => {
+	for (const server of serverMap.values()) {
+	  server.close();
+	}
+  
+	console.log('Tous les serveurs de bot ont été fermés.');
+	console.log('Le serveur principal sur le port 3000 est fermé.');
 });
 
 function isInt(value) {

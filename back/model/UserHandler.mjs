@@ -54,7 +54,7 @@ class UserHandler {
             console.log(`L'utilisateur dont le username est ${user_arg.username} n'existe pas.`);
             return null;
           }
-          const result = new User(user.username,user.password,user.data);
+          const result = new User(user.username,user.password);
           return result;
         } catch (error) {
           console.error(error);
@@ -70,7 +70,7 @@ class UserHandler {
             console.log(`L'utilisateur dont le username est ${user_arg} n'existe pas.`);
             return null;
           }
-          const result = new User(user.username,user.password,user.data);
+          const result = new User(user.username,user.password);
           return result;
         } catch (error) {
           console.error(error);
