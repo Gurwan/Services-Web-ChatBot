@@ -24,9 +24,15 @@
 		  </div>
 		  <button class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">Se connecter</button>
 		</form>
+		<button id="register_button" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-7">S'inscrire</button>
 	  </div>
 	</div>
 	<script>
+		const register_button = document.getElementById("register_button")
+		register_button.addEventListener('click', () => {
+			window.location.href = '/register';
+		});
+
 		const form = document.querySelector('form');
 
 		form.addEventListener('submit', async (event) => {

@@ -5,48 +5,23 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
+import bcrypt from 'bcrypt';
 import { fileURLToPath } from 'url';
 import RiveScript from 'rivescript';
 
-import {MongoClient, MongoParseError} from 'mongodb';
 import {BotHandler} from "./model/BotHandler.mjs";
+import {UserHandler} from "./model/UserHandler.mjs";
 
-
-/// SWAGGER PART
-import swaggerJSDoc from 'swagger-jsdoc';
-import swaggerUi from 'swagger-ui-express';
-
-const swaggerDefinition = {
-  openapi: '3.0.0',
-  info: {
-    title: 'Administration de Rive',
-    version: '1.0.0',
-    description: '',
-  	servers:[
-  		{
-  			url:'http://localhost:2999',
-  			description:'Development server',
-  		},
-  	],
-  },
-};
-
-const options = {
-  swaggerDefinition,
-  // Paths to files containing OpenAPI definitions
-  apis: ['./*.mjs', './model/*.mjs'],
-};
-
-const swaggerSpec = swaggerJSDoc(options);
 const botHandler = new BotHandler();
+const userHandler = new UserHandler();
 await botHandler.connectToDatabase();
+await userHandler.connectToDatabase();
 
 const serverMap = new Map();
 const riveScriptMap = new Map();
 
 const app = express();
 app.use(cors()); // Enable ALL CORS request
-app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec)); //Swagger Middleware to produce doc
 const port = 3000
 
 app.set('view engine', 'ejs');
@@ -236,6 +211,10 @@ app.get('/login', (req, res) => {
 	res.sendFile(path.join(__dirname, '../front/views/login.html'));
 });
 
+app.get('/register', (req, res) => {
+	res.sendFile(path.join(__dirname, '../front/views/register.html'));
+});
+
 app.get('/chat/:port', (req, res) => {
 	const { port } = req.params;
 	const filePath = path.join(__dirname, '../front/views/chat.html');
@@ -259,15 +238,40 @@ app.get('/add_bot', (req, res) => {
 	res.sendFile(path.join(__dirname, '../front/views/add_bot.html'));
 });
 
-app.post('/login', (req, res) => {
+app.post('/login', async (req, res) => {
 	const { username, password } = req.body;
 
-	if (username === 'votre_utilisateur' && password === 'votre_mot_de_passe') {
+	const user = await userHandler.getUserByUsername(username);
+	if(!user){
+		return res.status(400).json({ message: 'Cet utilisateur n\'existe pas !' });
+	}
+
+	const match = await bcrypt.compare(password, user.password);
+	
+	if (match) {
 		req.session.connected = true;
 	  	req.session.username = username;
 	  	res.status(200).send({ success: true });
 	} else {
 		res.status(401).send({ success: false, message: 'Identifiants invalides' });
+	}
+});
+
+app.post('/register', async (req, res) => {
+	const { username, password } = req.body;
+
+	try {
+		const alreadyExists = await userHandler.getUser({ username });
+		if (alreadyExists) {
+		  return res.status(400).json({ message: 'Un utilisateur avec ce nom utilisateur existe déjà' });
+		}
+		const hash = await bcrypt.hash(password, 10);
+		const newUser = { username, password: hash };
+	
+		await userHandler.createUser(newUser);
+		res.status(201).json({ message: 'Utilisateur enregistré avec succès' });
+	} catch(error){
+		res.status(500).json({ message: 'Erreur lors de l\'inscription de l\'utilisateur' });
 	}
 });
 
