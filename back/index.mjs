@@ -1,11 +1,13 @@
 import express from 'express';
 import session from 'express-session';
 import bodyParser from 'body-parser';
-import fs from 'fs';
+import fs, { cp } from 'fs';
 import path from 'path';
 import bcrypt from 'bcrypt';
+import cors from 'cors';
 import { fileURLToPath } from 'url';
 import RiveScript from 'rivescript';
+import discord from 'discord.js'
 
 import {BotHandler} from "./model/BotHandler.mjs";
 import {UserHandler} from "./model/UserHandler.mjs";
@@ -19,6 +21,7 @@ const serverMap = new Map();
 const riveScriptMap = new Map();
 
 const app = express();
+app.use(cors()); // Enable ALL CORS request
 const port = 3000
 
 app.set('view engine', 'ejs');
@@ -127,10 +130,40 @@ app.post('/start-stop/:id', async (req,res) => {
 				const message = req.params.message;
 				riveScriptMap.get(id).sortReplies();
 
-				console.log(username_connected)
-
 				const reply = await riveScriptMap.get(id).reply('local-user', message);
 				res.send(reply);
+			});
+
+			app.get('/go-discord', async (req, res) => {
+				const client = new discord.Client({
+					intents: [
+						discord.IntentsBitField.Flags.Guilds,
+						discord.IntentsBitField.Flags.GuildMessages,
+						discord.IntentsBitField.Flags.DirectMessages,
+					]});
+				const bot = await botHandler.getBot(id);
+
+				client.on('ready', () => {
+					console.log(`${bot.name} est connecté en tant que ${client.user.tag} sur discord`);
+				});
+
+				client.on('messageCreate', async (msg) => {
+					let content = msg.content.split(' ');
+					if(content.length < 2) return;
+					if(msg.author.bot) return;
+					content.shift();
+					content = content.join(' ');
+					if(content != " ") {
+						riveScriptMap.get(id).sortReplies();
+						const reply = await riveScriptMap.get(id).reply('local-user', content);
+						msg.channel.send(reply);
+					} 
+				})
+
+				if(bot.discord_token != null && bot.discord_token != undefined && bot.discord_token != ''){
+					client.login(bot.discord_token);
+				}
+
 			});
 
 			app.get('/load-brain', async (req,res) => {

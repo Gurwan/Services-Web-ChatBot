@@ -151,7 +151,7 @@
               discordStartBtn.style.width = "20px"; 
               discordStartBtn.style.height = "20px"; 
               discordStartBtn.style.backgroundRepeat = "no-repeat"; 
-              discordStartBtn.addEventListener("click", () => startDiscordBot(bot.id));
+              discordStartBtn.addEventListener("click", () => startDiscordBot(bot));
 
               discordTokenContainer.appendChild(discordToken);
               discordTokenContainer.appendChild(discordStartBtn);
@@ -180,7 +180,7 @@
               mastodonStartBtn.style.width = "20px"; 
               mastodonStartBtn.style.height = "20px"; 
               mastodonStartBtn.style.backgroundRepeat = "no-repeat"; 
-              mastodonStartBtn.addEventListener("click", () => startMastodonBot(bot.id));
+              mastodonStartBtn.addEventListener("click", () => startMastodonBot(bot));
 
               mastodonTokenContainer.appendChild(mastodonToken);
               mastodonTokenContainer.appendChild(mastodonStartBtn);
@@ -223,6 +223,54 @@
           .catch((err)=>{
             console.log(`ERROR : ${err}`);
           })
+      }
+
+      function startDiscordBot(bot){
+        fetch('http://localhost:3000/get-state-bot/' + bot.id, {
+                  method: 'GET',
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    if(data){
+                      fetch(`http://localhost:${bot.port}/load-brain/`, {
+                        method: 'GET'
+                      })
+                      .then((response) => response.json())
+                      .then((data) => console.log(data))
+                      .catch((error) => console.error(error));
+                      
+                      fetch(`http://localhost:${bot.port}/go-discord/`, {
+                        method: 'GET'
+                      })
+                      .then((response) => response.json())
+                      .then((data) => console.log(data))
+                      .catch((error) => console.error(error));
+                    } else {
+                      alert(`Il faut démarrer le bot ${bot.name} avant de l'envoyer sur Discord`)
+                    }
+                  })
+                  .catch(error => console.error(error));
+
+      }
+
+      function startMastodonBot(bot){
+        fetch('http://localhost:3000/get-state-bot/' + bot.id, {
+                  method: 'GET',
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    if(data){
+                      fetch(`http://localhost:${port}/go-mastodon/`, {
+                        method: 'GET'
+                      })
+                      .then((response) => response.json())
+                      .then((data) => console.log(data))
+                      .catch((error) => console.error(error));
+                    } else {
+                      alert(`Il faut démarrer le bot ${bot.name} avant de l'envoyer sur Mastodon`)
+                    }
+                  })
+                  .catch(error => console.error(error));
       }
 
       function changeBrainChoice(idBot,input){
