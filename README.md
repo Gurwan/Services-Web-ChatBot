@@ -13,6 +13,7 @@ Ce projet a pour objectif de développer une application web permettant de crée
   - nodemon : utilitaire utile pendant le développement
   - rivescript : permet de converser avec les bots
   - discord.js : implémentation de discord dans le projet afin de pouvoir envoyer un bot sur la plateforme
+  - mastodon-api : implémentation de mastodon dans le projet afin de pouvoir envoyer un bot sur la plateforme
 - Base de données (MongoDB) : la base de données est créée dans le code
 
 ## Installation
@@ -24,13 +25,18 @@ Ce projet a pour objectif de développer une application web permettant de crée
 
 ## Procédure de test
 
-### Pour discord 
+### Pour Discord 
 
 1. Créer une application et un bot dans l'espace développeur de Discord
 2. Copiez le token et ajoutez le à votre bot sur l'application TalkBot
 3. Ajoutez le bot au serveur de votre choix en accédant à l'URL : https://discord.com/oauth2/authorize?client_id=%CLIENT_ID%&scope=bot&permissions=0
 4. Lancez votre bot sur discord en cliquant sur le bouton à droite du token discord.
 5. Pour parler avec lui (depuis votre serveur Discord), il faut commencer le message par un @NOM_DU_BOT
+
+### Pour Mastodon
+
+1. Connectez-vous à votre compte Botsin.space ou créer en un
+2. 
 
 ## Auteurs
 

@@ -8,9 +8,11 @@ import cors from 'cors';
 import { fileURLToPath } from 'url';
 import RiveScript from 'rivescript';
 import discord from 'discord.js'
+import mastodon from 'mastodon-api'
 
 import {BotHandler} from "./model/BotHandler.mjs";
 import {UserHandler} from "./model/UserHandler.mjs";
+import Mastodon from 'mastodon-api';
 
 const botHandler = new BotHandler();
 const userHandler = new UserHandler();
@@ -162,6 +164,47 @@ app.post('/start-stop/:id', async (req,res) => {
 
 				if(bot.discord_token != null && bot.discord_token != undefined && bot.discord_token != ''){
 					client.login(bot.discord_token);
+				}
+
+			});
+
+			app.get('/go-mastodon', async (req, res) => {
+				const bot = await botHandler.getBot(id);
+
+				if(bot.mastodon_token != null && bot.mastodon_token != undefined && bot.mastodon_token != ''){
+					const mastodon = new Mastodon({
+						access_token: bot.mastodon_token,
+						api_url: 'https://botsin.space/api/v1/'
+					})
+
+					mastodon.stream('streaming/user', (stream) => {
+						stream.on('message', async (notification) => {
+						  if (notification.type === 'direct_message') {
+							const message = notification.data;
+							const sender = message.account.username;
+							const content = message.content;
+					  
+							console.log(`Nouveau message direct de ${sender}: ${content}`);
+
+							if(content != " ") {
+								riveScriptMap.get(id).sortReplies();
+								const reply = await riveScriptMap.get(id).reply('local-user', content);
+							
+								mastodon.post(`statuses`, { status: reply, in_reply_to_id: message.id }, (error, data) => {
+									if (error) {
+										console.error('Erreur lors de la réponse au message direct :', error);
+									} else {
+										console.log('Réponse au message direct envoyée avec succès :', data);
+									}
+								});
+							} 	
+						  }
+						});
+					  
+						stream.on('error', (error) => {
+						  console.error('Une erreur s\'est produite lors de conversation :', error);
+						});
+					  });
 				}
 
 			});
