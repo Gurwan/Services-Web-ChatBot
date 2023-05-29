@@ -59,7 +59,7 @@ class BotHandler {
             console.log(`Bot avec ID ${idBot} n'a pas été trouvé.`);
             return null;
           }
-          const result = new Bot(bot.name, bot.id, bot.port, bot.brain);
+          const result = new Bot(bot.name, bot.id, bot.port, bot.brain, bot.discord_token, bot.mastodon_token);
           return result;
         } catch (error) {
           console.error(error);

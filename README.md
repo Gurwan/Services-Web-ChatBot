@@ -11,6 +11,7 @@ Ce projet a pour objectif de développer une application web permettant de crée
   - mongodb : pour le stockage des données utilisateurs et des bots
   - nodemon : utilitaire utile pendant le développement
   - rivescript : permet de converser avec les bots
+  - discord.js : implémentation de discord dans le projet afin de pouvoir envoyer un bot sur la plateforme
 - Base de données (MongoDB) : la base de données est créée dans le code
 
 ## Installation

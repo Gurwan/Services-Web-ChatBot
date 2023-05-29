@@ -1,8 +1,6 @@
 import express from 'express';
 import session from 'express-session';
-import flash from'express-flash';
 import bodyParser from 'body-parser';
-import cors from 'cors';
 import fs from 'fs';
 import path from 'path';
 import bcrypt from 'bcrypt';
@@ -21,7 +19,6 @@ const serverMap = new Map();
 const riveScriptMap = new Map();
 
 const app = express();
-app.use(cors()); // Enable ALL CORS request
 const port = 3000
 
 app.set('view engine', 'ejs');
@@ -38,7 +35,6 @@ app.use(session({
 	resave: false,
 	saveUninitialized: true
 }));
-app.use(flash());
 
 app.use(bodyParser.json()) 
 app.use(bodyParser.urlencoded({ extended: true })) 
@@ -300,7 +296,7 @@ app.post('/logout', (req, res) => {
 });
 
 const mainServer = app.listen(port, () => {
-	console.log(`Example app listening at http://localhost:${port}`)
+	console.log(`L'application web est lancée sur l'URL http://localhost:${port}`)
 });
 
 mainServer.on('close', () => {

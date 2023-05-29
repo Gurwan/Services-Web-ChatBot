@@ -60,15 +60,16 @@
               botElement.classList.add("bg-gray-100", "p-4", "rounded-md", "relative");
 
               const deleteBtn = document.createElement("button");
-              deleteBtn.classList.add("absolute", "bottom-2", "right-2", "cursor-pointer");
-              deleteBtn.style.width = "25px"; // ajouter une largeur de 50px
-              deleteBtn.style.height = "25px"; // ajouter une hauteur de 50px
-              deleteBtn.style.backgroundImage = "url(assets/img/trash.svg)"; // ajouter l'image
+              deleteBtn.classList.add("absolute", "top-5", "right-2", "cursor-pointer");
+              deleteBtn.style.width = "25px"; 
+              deleteBtn.style.height = "25px"; 
+              
+              deleteBtn.style.backgroundImage = "url(assets/img/trash.svg)";
               deleteBtn.style.backgroundRepeat = "no-repeat"; // éviter la répétition de l'image
               deleteBtn.addEventListener("click", () => deleteBot(bot.id));
 
               const startBtn = document.createElement("button");
-              startBtn.classList.add("absolute", "top-5", "right-2", "cursor-pointer");
+              startBtn.classList.add("absolute", "top-5", "right-6", "mr-3", "cursor-pointer");
               startBtn.id = "start-btn-" + bot.id
 
               fetch(`http://localhost:3000/checkServer/${bot.id}`)
@@ -87,10 +88,10 @@
                 });
 
 
-              startBtn.style.width = "25px"; // ajouter une largeur de 50px
-              startBtn.style.height = "25px"; // ajouter une hauteur de 50px
+              startBtn.style.width = "25px"; 
+              startBtn.style.height = "25px"; 
 
-              startBtn.style.backgroundRepeat = "no-repeat"; // éviter la répétition de l'image
+              startBtn.style.backgroundRepeat = "no-repeat"; 
               startBtn.addEventListener("click", () => startBot(bot.id));
 
               const botName = document.createElement("h2");
@@ -126,6 +127,46 @@
                 botBrains.appendChild(label)
               }
 
+              const discordTokenContainer = document.createElement("div");
+              discordTokenContainer.classList.add("flex", "items-center", "mt-2");
+
+              const discordToken = document.createElement("input");
+              discordToken.type = "text";
+              discordToken.name = "discord_token";
+              discordToken.placeholder = "Discord Token";
+              discordToken.classList.add("py-1", "px-2", "border", "border-gray-300", "rounded-md", "w-full");
+
+              const discordStartBtn = document.createElement("button");
+              discordStartBtn.classList.add("start-button", "ml-2");
+              discordStartBtn.style.backgroundImage = "url(assets/img/start.svg)"; 
+              discordStartBtn.style.width = "20px"; 
+              discordStartBtn.style.height = "20px"; 
+              discordStartBtn.style.backgroundRepeat = "no-repeat"; 
+              discordStartBtn.addEventListener("click", () => startDiscordBot(bot.id));
+
+              discordTokenContainer.appendChild(discordToken);
+              discordTokenContainer.appendChild(discordStartBtn);
+
+              const mastodonTokenContainer = document.createElement("div");
+              mastodonTokenContainer.classList.add("flex", "items-center", "mt-2");
+
+              const mastodonToken = document.createElement("input");
+              mastodonToken.type = "text";
+              mastodonToken.name = "mastodon_token";
+              mastodonToken.placeholder = "Mastodon Token";
+              mastodonToken.classList.add("py-1", "px-2", "border", "border-gray-300", "rounded-md", "w-full");
+
+              const mastodonStartBtn = document.createElement("button");
+              mastodonStartBtn.classList.add("start-button", "ml-2");
+              mastodonStartBtn.style.backgroundImage = "url(assets/img/start.svg)";
+              mastodonStartBtn.style.width = "20px"; 
+              mastodonStartBtn.style.height = "20px"; 
+              mastodonStartBtn.style.backgroundRepeat = "no-repeat"; 
+              mastodonStartBtn.addEventListener("click", () => startMastodonBot(bot.id));
+
+              mastodonTokenContainer.appendChild(mastodonToken);
+              mastodonTokenContainer.appendChild(mastodonStartBtn);
+
               botElement.appendChild(startBtn);
               botElement.appendChild(deleteBtn);
               botElement.appendChild(botName);
@@ -133,6 +174,9 @@
               botElement.appendChild(botPort);
               botElement.appendChild(labelBrain);
               botElement.appendChild(botBrains);
+              botElement.appendChild(discordTokenContainer);
+              botElement.appendChild(mastodonTokenContainer);
+
 
               botElement.addEventListener("dblclick", () => {
                 fetch('http://localhost:3000/get-state-bot/' + bot.id, {
@@ -263,12 +307,10 @@
     </div>
   </nav>
 
-  <div style="margin-top: 120px; margin-bottom: 30px;">
-
-    <p>Vous êtes connecté en tant que <span id="username"></span>.</p>
-
-
+  <div class="mt-12 mb-6" style="margin-top: 120px; text-align: center;">
+    <h2 class="text-3xl font-bold">Bienvenue, <span id="username" class="text-3xl font-bold"></span> !</h2>
   </div>
+  
   <div class="grid grid-cols-3 gap-4" id="grid-container">
   </div>
 
