@@ -125,14 +125,47 @@ app.post('/start-stop/:id', async (req,res) => {
 			res.status(201).send('Bot stopped');
 		})
 	} else {
-		const server = app.listen(botToStart.port, () => {
+		const server = app.listen(botToStart.port, async () => {
 			console.log(`Le bot ` + botToStart.name + " a été démarré sur le port : " + botToStart.port);
+
+			const user = await userHandler.getUserByUsername(username_connected)
+			if(user.data && typeof user.data === 'object'){
+				for (const [key, value] of Object.entries(user.data)) {
+					riveScriptMap.get(id).setUservar(username_connected, key, value);
+				}
+			} 
 
 			app.get('/message/:message', async (req, res) => {
 				const message = req.params.message;
+
+				const regex = /my (\w+) is (\w+|\d+)/i;
+
+				const match = message.match(regex);
+
+				if (match && match.length === 3) {
+					const category = match[1]; 
+
+					let value = match[2]; 
+
+					if(!(user.data)){
+						user.data = new Map();
+					}
+
+					if(typeof user.data != Map){
+						user.data = new Map(Object.entries(user.data));
+					} 
+
+					user.data.set(category, value);
+
+
+					let retUpdateData = await userHandler.updateData(user.username,user.data);
+
+					riveScriptMap.get(id).setUservar(username_connected, category, value);
+				}
+
 				riveScriptMap.get(id).sortReplies();
 
-				const reply = await riveScriptMap.get(id).reply('local-user', message);
+				const reply = await riveScriptMap.get(id).reply(username_connected, message);
 				res.send(reply);
 			});
 
@@ -223,6 +256,7 @@ app.post('/start-stop/:id', async (req,res) => {
 						});
 				})
 				botRivescript.sortReplies();
+				botRivescript.setVariable('name',botToStart.name)
 			})
 
 			res.status(201).send('Bot started');
@@ -344,7 +378,11 @@ app.get('/chat/:port', (req, res) => {
 }); 
 
 app.get('/', (req, res) => {
-	res.sendFile(path.join(__dirname, '../front/views/index.html'));
+	if(!username_connected){
+		res.sendFile(path.join(__dirname, '../front/views/login.html'));
+	} else {
+		res.sendFile(path.join(__dirname, '../front/views/index.html'));
+	}
 });
   
 app.get('/add_bot', (req, res) => {

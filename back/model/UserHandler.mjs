@@ -38,12 +38,22 @@ class UserHandler {
     }
 
     async createUser(user){
-        const newUser = { username: user.username, password: user.password };
+        const newUser = { username: user.username, password: user.password, data: user.data };
         await this.usersCollection.insertOne(newUser, function(err, res) {
                 if (err) throw err;
                 this.client.close();
         });
         return "L'utilisateur " + newUser.username + " a été crée";
+    }
+
+    async updateData(username,data){
+      try {
+        await this.client.connect();
+        await this.usersCollection.updateOne({username: username}, {$set: {data: data}});
+        return "Les données de l'utilisateur " + username + " ont été mises à jour";
+      } catch (err){
+        throw err;
+      }
     }
 
     async getUser(user_arg) {
@@ -54,7 +64,7 @@ class UserHandler {
             console.log(`L'utilisateur dont le username est ${user_arg.username} n'existe pas.`);
             return null;
           }
-          const result = new User(user.username,user.password);
+          const result = new User(user.username,user.password,user.data);
           return result;
         } catch (error) {
           console.error(error);
@@ -70,7 +80,7 @@ class UserHandler {
             console.log(`L'utilisateur dont le username est ${user_arg} n'existe pas.`);
             return null;
           }
-          const result = new User(user.username,user.password);
+          const result = new User(user.username,user.password,user.data);
           return result;
         } catch (error) {
           console.error(error);
