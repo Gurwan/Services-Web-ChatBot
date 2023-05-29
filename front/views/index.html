@@ -133,8 +133,17 @@
               const discordToken = document.createElement("input");
               discordToken.type = "text";
               discordToken.name = "discord_token";
-              discordToken.placeholder = "Discord Token";
+              discordToken.value = bot.discord_token || '';
+              discordToken.placeholder = "Discord Token (entrer pour enregister)";
               discordToken.classList.add("py-1", "px-2", "border", "border-gray-300", "rounded-md", "w-full");
+
+              discordToken.addEventListener("keydown", (event) => {
+                if (event.keyCode === 13) {
+                  event.preventDefault();
+                  const token = discordToken.value;
+                  saveToken('discord',token,bot.id);
+                }
+              });
 
               const discordStartBtn = document.createElement("button");
               discordStartBtn.classList.add("start-button", "ml-2");
@@ -153,8 +162,17 @@
               const mastodonToken = document.createElement("input");
               mastodonToken.type = "text";
               mastodonToken.name = "mastodon_token";
-              mastodonToken.placeholder = "Mastodon Token";
+              mastodonToken.value = bot.mastodon_token || '';
+              mastodonToken.placeholder = "Mastodon Token (entrer pour enregister)";
               mastodonToken.classList.add("py-1", "px-2", "border", "border-gray-300", "rounded-md", "w-full");
+
+              mastodonToken.addEventListener("keydown", (event) => {
+                if (event.keyCode === 13) {
+                  event.preventDefault();
+                  const token = mastodonToken.value;
+                  saveToken('mastodon',token,bot.id);
+                }
+              });
 
               const mastodonStartBtn = document.createElement("button");
               mastodonStartBtn.classList.add("start-button", "ml-2");
@@ -226,6 +244,33 @@
         }
       }
 
+      function saveToken(platform,token,bot_id){
+        let myHeaders = new Headers();
+			  myHeaders.append('Content-Type', 'application/json');
+
+        let myInit = { 
+          method: 'PUT',
+          headers: myHeaders,
+          mode: 'cors',
+          cache: 'default',
+          body: JSON.stringify({ platform, token })
+        };
+
+        let myURL = `http://localhost:3000/update_token/${bot_id}`;
+        
+        fetch(myURL,myInit)
+          .then((httpResponse)=>{
+            return httpResponse.text()
+          })
+          .then((returnString)=>{
+            displayBots();
+            console.log(`${returnString}`)
+          })
+          .catch((err)=>{
+            console.log(`ERROR : ${err}`);
+          })	      
+      }
+
       function deleteBot(id){
         let myHeaders = new Headers();
 			  myHeaders.append('Content-Type', 'application/json');
@@ -252,7 +297,7 @@
           })		
         }
 
-        function startBot(id) {
+      function startBot(id) {
             const btn = document.getElementById(`start-btn-${id}`);
             fetch(`http://localhost:3000/start-stop/${id}`, { method: 'POST' })
                 .then(response => {

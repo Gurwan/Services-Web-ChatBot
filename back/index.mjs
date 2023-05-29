@@ -82,6 +82,12 @@ app.get('/get-state-bot/:id', async (req, res) => {
 	}
 })
 
+app.get('/checkServer/:id', (req, res) => {
+	const id = req.params.id;
+	const serverExists = serverMap.has(id);
+	res.json({ exists: serverExists });
+});
+
 app.post('/',(req,res)=>{
 	let newBot = req.body.name;
 	botHandler
@@ -151,12 +157,6 @@ app.post('/start-stop/:id', async (req,res) => {
 	}
 })
 
-app.get('/checkServer/:id', (req, res) => {
-	const id = req.params.id;
-	const serverExists = serverMap.has(id);
-	res.json({ exists: serverExists });
-});
-
 app.post('/add-brain/:id/:brain', async (req,res) => {
 	const id = req.params.id;
 	const brain = req.params.brain;
@@ -175,6 +175,36 @@ app.post('/add-brain/:id/:brain', async (req,res) => {
 			res.status(400).json({message: 'BAD REQUEST'});
 		});
 })
+
+app.put('/update_token/:id', (req, res) => {
+	const id = req.params.id;
+	const { platform, token } = req.body;
+  
+	if (platform === 'discord') {
+	  botHandler
+		.updateTokenDiscord(id, token)
+		.then(() => {
+		  res.status(201).json({ message: 'Le token pour la plateforme Discord a bien été mise à jour' });
+		})
+		.catch((err) => {
+		  console.log(`Error: ${err}`);
+		  res.status(400).json({ message: 'Bad Request' });
+		});
+	} else if (platform === 'mastodon') {
+	  botHandler
+		.updateTokenMastodon(id, token)
+		.then(() => {
+		  res.status(201).json({ message: 'Le token pour la plateforme Mastodon a bien été mise à jour' });
+		})
+		.catch((err) => {
+		  console.log(`Error: ${err}`);
+		  res.status(400).json({ message: 'Bad Request' });
+		});
+	} else {
+	  res.status(400).json({ message: 'Invalid platform' });
+	}
+});
+  
 
 app.delete('/remove-brain/:id/:brain', async (req,res) => {
 	const id = req.params.id;
