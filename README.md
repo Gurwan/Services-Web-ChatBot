@@ -6,6 +6,7 @@ Ce projet a pour objectif de développer une application web permettant de crée
 
 - Framework NodeJS
   - bcrypt : pour le chiffrement sécurisé du mot de passe de l'utilisateur
+  - cors : pour permettre aux différents serveurs de communiquer
   - express : framework basé sur NodeJS et permettant de construire notre application web
   - express-session : pour la gestion de la session utilisateur
   - mongodb : pour le stockage des données utilisateurs et des bots
