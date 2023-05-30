@@ -49,9 +49,6 @@
 
         fetch(myURL+'get-all-bots',myInit)
           .then((httpResponse)=>{
-            for(let field of httpResponse.headers){
-              console.log(`raw = ${field}`);
-            }	
             return httpResponse.json()
           })
           .then((bots)=>{
@@ -118,7 +115,7 @@
                   input.checked = true;
                 }
 
-                input.addEventListener('change', () => changeBrainChoice(bot.id,input));
+                input.addEventListener('change', () => changeBrainChoice(bot.id,input,bot.port));
 
                 const label = document.createElement('label');
                 label.classList.add("label-brain")
@@ -194,29 +191,6 @@
               botElement.appendChild(botBrains);
               botElement.appendChild(discordTokenContainer);
               botElement.appendChild(mastodonTokenContainer);
-
-
-              botElement.addEventListener("dblclick", () => {
-                fetch('http://localhost:3000/get-state-bot/' + bot.id, {
-                  method: 'GET',
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                    if(data){
-                      fetch(`http://localhost:${bot.port}/load-brain/`, {
-                        method: 'GET'
-                      })
-                      .then((response) => response.json())
-                      .then((data) => console.log(data))
-                      .catch((error) => console.error(error));
-                      window.open(`chat/${bot.port}`, `Conversation avec ${bot.name}`);
-                    } else {
-                      alert(`Il faut démarrer le bot ${bot.name} avant d'ouvrir la conversation avec lui`)
-                    }
-                  })
-                  .catch(error => console.error(error));
-              })
-
               botList.appendChild(botElement);
             }
           })
@@ -273,24 +247,52 @@
                   .catch(error => console.error(error));
       }
 
-      function changeBrainChoice(idBot,input){
+      function changeBrainChoice(idBot,input,portBot){
         const brain = input.value;
         if (input.checked) {
           fetch(`http://localhost:3000/add-brain/${idBot}/${brain}`, {
             method: 'POST'
           })
           .then((response) => response.json())
-          .then((data) => console.log(data))
+          .then((data) => {
+            console.log(data)
+            reloadBrains(idBot,portBot)
+          })
           .catch((error) => console.error(error));
         } else {
           fetch(`http://localhost:3000/remove-brain/${idBot}/${brain}`, {
             method: 'DELETE'
           })
           .then((response) => response.json())
-          .then((data) => console.log(data))
+          .then((data) => {
+            console.log(data)
+            reloadBrains(idBot,portBot)
+          })
           .catch((error) => console.error(error));
         }
       }
+
+      function reloadBrains(idBot,portBot){
+        fetch(`http://localhost:3000/checkServer/${idBot}`)
+                .then(response => response.json())
+                .then(data => {
+                  const serverExists = data.exists;
+
+                  if (serverExists) {
+                    fetch(`http://localhost:${portBot}/load-brain/`, {
+                        method: 'GET'
+                      })
+                      .then((response) => response.json())
+                      .then((data) => {
+                        console.log(data)
+                      })
+                      .catch((error) => console.error(error));                  } 
+                })
+                .catch(error => {
+                  console.error('Une erreur s\'est produite lors de la vérification du serveur :', error);
+                });
+      }
+
 
       function saveToken(platform,token,bot_id){
         let myHeaders = new Headers();
@@ -388,6 +390,9 @@
       <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
         <li>
           <a href="#" class="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Accueil</a>
+        </li>
+        <li>
+          <a href="/conversations" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Conversations</a>
         </li>
         <li>
           <a href="/add_bot" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Ajouter un bot</a>

@@ -58,6 +58,26 @@ app.get('/get-all-bots', async (req,res) => {
 	}
 })
 
+app.get('/get-all-bots-started', async (req,res) => {
+	try{
+		let arrayBots = await botHandler.getAllBots();
+		let i = 0;
+		while (i < arrayBots.length) {
+		  const a = arrayBots[i];
+		  if (!serverMap.get(a.id) && !serverMap.get((a.id).toString())) {
+			arrayBots.splice(i, 1);
+		  } else {
+			i++;
+		  }
+		}
+		res.status(200).json(arrayBots);
+	}
+	catch(err){
+		console.log(`Error ${err} thrown... stack is : ${err.stack}`);
+		res.status(404).send('NOT FOUND');
+	}
+})
+
 app.get('/get-brains', (req, res) => {
 	fs.readdir(folderBrains, (err, files) => {
 		if (err) {
@@ -115,7 +135,6 @@ app.post('/start-stop/:id', async (req,res) => {
 		res.status(404).send("Ce bot n'existe pas");
 		return
 	}
-
 	const serverToClose = serverMap.get(id);
 	if(serverToClose){
 		serverToClose.close(() => {
@@ -129,7 +148,7 @@ app.post('/start-stop/:id', async (req,res) => {
 			console.log(`Le bot ` + botToStart.name + " a été démarré sur le port : " + botToStart.port);
 
 			const user = await userHandler.getUserByUsername(username_connected)
-			if(user.data && typeof user.data === 'object'){
+			if(user != null && user.data && typeof user.data === 'object'){
 				for (const [key, value] of Object.entries(user.data)) {
 					riveScriptMap.get(id).setUservar(username_connected, key, value);
 				}
@@ -190,7 +209,7 @@ app.post('/start-stop/:id', async (req,res) => {
 					content = content.join(' ');
 					if(content != " ") {
 						riveScriptMap.get(id).sortReplies();
-						const reply = await riveScriptMap.get(id).reply('local-user', content);
+						const reply = await riveScriptMap.get(id).reply(username_connected, content);
 						msg.channel.send(reply);
 					} 
 				})
@@ -244,19 +263,24 @@ app.post('/start-stop/:id', async (req,res) => {
 
 			app.get('/load-brain', async (req,res) => {
 				const bot = await botHandler.getBot(id);
-				const botRivescript = riveScriptMap.get(id);                            
-				bot.brain.forEach(br => {
-					const brPath = `${folderBrains}/${br}`;
-					botRivescript
-						.loadFile(brPath)
-						.then(() => {
-							console.log(`Le cerveau du bot ${bot.name} a été chargé avec ${brPath}`);
-						})
-						.catch((err) => {
-						});
-				})
-				botRivescript.sortReplies();
-				botRivescript.setVariable('name',botToStart.name)
+				const botRivescript = riveScriptMap.get(id);
+				if(bot != null){
+					bot.brain.forEach(br => {
+						const brPath = `${folderBrains}/${br}`;
+						if(botRivescript != null){
+							botRivescript
+							.loadFile(brPath)
+							.then(() => {
+							})
+							.catch((err) => {
+							});
+						}
+					})
+					botRivescript.sortReplies();
+					botRivescript.setVariable('name',botToStart.name)
+					res.status(201).json({ data: 'Les cerveaux ont bien été chargés' });
+
+				}                            
 			})
 
 			res.status(201).send('Bot started');
@@ -358,6 +382,14 @@ app.get('/login', (req, res) => {
 	res.sendFile(path.join(__dirname, '../front/views/login.html'));
 });
 
+app.get('/conversations', (req, res) => {
+	if(!username_connected){
+		res.sendFile(path.join(__dirname, '../front/views/login.html'));
+	} else {
+		res.sendFile(path.join(__dirname, '../front/views/conversations.html'));
+	}
+});
+
 app.get('/register', (req, res) => {
 	res.sendFile(path.join(__dirname, '../front/views/register.html'));
 });
@@ -386,7 +418,11 @@ app.get('/', (req, res) => {
 });
   
 app.get('/add_bot', (req, res) => {
-	res.sendFile(path.join(__dirname, '../front/views/add_bot.html'));
+	if(!username_connected){
+		res.sendFile(path.join(__dirname, '../front/views/login.html'));
+	} else {
+		res.sendFile(path.join(__dirname, '../front/views/add_bot.html'));
+	}
 });
 
 app.post('/login', async (req, res) => {
