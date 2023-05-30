@@ -3,12 +3,62 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>TalkBot</title>
+	<title>TalkBot - Connexion</title>
 	<!-- Liens vers les fichiers CSS de Flowbite -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/style.css">
 </head>
 
-<body>
-    
-</body>
+<body class="bg-gray-100">
+	<div class="flex items-center justify-center min-h-screen mt-4">
+	  <div class="max-w-md w-full bg-white p-8 shadow-md rounded-md">
+		<h1 class="text-2xl font-semibold text-gray-800 mb-6">Connexion</h1>
+		<form action="/login" method="POST">
+		  <div class="mb-4">
+			<label class="block text-gray-700 text-sm font-bold mb-2" for="username">Nom d'utilisateur</label>
+			<input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500" type="text" id="username" placeholder="Votre nom d'utilisateur">
+		  </div>
+		  <div class="mb-6">
+			<label class="block text-gray-700 text-sm font-bold mb-2" for="password">Mot de passe</label>
+			<input class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:border-indigo-500" type="password" id="password" placeholder="Votre mot de passe">
+		  </div>
+		  <button class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">Se connecter</button>
+		</form>
+		<button id="register_button" class="bg-indigo-500 hover:bg-indigo-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mt-7">S'inscrire</button>
+	  </div>
+	</div>
+	<script>
+		const register_button = document.getElementById("register_button")
+		register_button.addEventListener('click', () => {
+			window.location.href = '/register';
+		});
+
+		const form = document.querySelector('form');
+
+		form.addEventListener('submit', async (event) => {
+			event.preventDefault();
+
+			const username = document.getElementById('username').value;
+			const password = document.getElementById('password').value;
+			const formData = new URLSearchParams();
+			formData.append('username',username);
+			formData.append('password',password);
+			const response = await fetch('http://localhost:3000/login', {
+				method: 'POST',
+				body: formData
+			});
+
+			if (response.ok) {
+
+				sessionStorage.setItem('connected', 'true');
+				sessionStorage.setItem('username', formData.get('username'));
+				window.location.href = '/';
+
+			} else {
+				sessionStorage.removeItem('connected');
+				alert('Identifiants invalides');
+			}
+		});
+	</script>
+  </body>
+  </html>

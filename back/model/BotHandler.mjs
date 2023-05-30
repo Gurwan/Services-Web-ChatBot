@@ -59,7 +59,7 @@ class BotHandler {
             console.log(`Bot avec ID ${idBot} n'a pas été trouvé.`);
             return null;
           }
-          const result = new Bot(bot.name, bot.id, bot.port, bot.brain);
+          const result = new Bot(bot.name, bot.id, bot.port, bot.brain, bot.discord_token, bot.mastodon_token);
           return result;
         } catch (error) {
           console.error(error);
@@ -77,6 +77,28 @@ class BotHandler {
             return `L'ajout du cerveau ${brain} au bot ${idBot} a échoué`;
         }
     }
+
+    async updateTokenMastodon(idBot, token) {
+        idBot = parseInt(idBot);
+        await this.client.connect();
+        const res = await this.botsCollection.updateOne({ id: idBot }, { $set: { mastodon_token: token } });
+        if (res.modifiedCount === 1) {
+          return `Le token Mastodon a été mis à jour pour le bot ${idBot}`;
+        } else {
+          return `La mise à jour du token Mastodon pour le bot ${idBot} a échoué`;
+        }
+    }
+      
+    async updateTokenDiscord(idBot, token) {
+      idBot = parseInt(idBot);
+      await this.client.connect();
+      const res = await this.botsCollection.updateOne({ id: idBot }, { $set: { discord_token: token } });
+      if (res.modifiedCount === 1) {
+        return `Le token Discord a été mis à jour pour le bot ${idBot}`;
+      } else {
+        return `La mise à jour du token Discord pour le bot ${idBot} a échoué`;
+      }
+    }   
 
     async removeBrain(idBot,brain){
         idBot = parseInt(idBot);
@@ -115,7 +137,7 @@ class BotHandler {
     async getAllBots(){
         await this.client.connect();
         let arrayBots = await this.botsCollection.find({}).toArray();
-        let result = arrayBots.map(element => new Bot(element.name, element.id, element.port, element.brain));
+        let result = arrayBots.map(element => new Bot(element.name, element.id, element.port, element.brain, element.discord_token, element.mastodon_token));
         return result;
     }
 

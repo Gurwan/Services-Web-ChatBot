@@ -5,10 +5,11 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ChatBot</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
     <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body>
-    <div class="chat">      
+    <div class="chat w-full">      
 
       <div class="messages"></div>
       <div id="edge"></div>      
@@ -24,8 +25,7 @@
 
       inputField.focus();
 
-      const urlParams = new URLSearchParams(window.location.search);
-      const port = urlParams.get("port"); // Récupération du numéro de port depuis l'URL
+      var port = '{{port}}';
       
       const serverUrl = `http://localhost:${port}`;
       const messages = document.querySelector('.messages');
@@ -33,9 +33,10 @@
 
       // Envoie le message au bot
       const sendMessage = async (message) => {
+        console.log(`${serverUrl}/message/${message}`)
           const response = await fetch(`${serverUrl}/message/${message}`);
           const reply = await response.text();
-          const messageHtml = `<div class="self">${message}</div><div class="bot">${reply}</div>`;
+          const messageHtml = `<div class="self">${message} </div><div class="bot">${reply}</div>`;
           edgeElement.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
           window.scrollBy(0, -inputField.offsetHeight); // défilement vers le haut pour compenser le focus sur l'élément input
           inputField.focus();

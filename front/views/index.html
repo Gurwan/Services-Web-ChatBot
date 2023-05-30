@@ -60,21 +60,38 @@
               botElement.classList.add("bg-gray-100", "p-4", "rounded-md", "relative");
 
               const deleteBtn = document.createElement("button");
-              deleteBtn.classList.add("absolute", "bottom-2", "right-2", "cursor-pointer");
-              deleteBtn.style.width = "25px"; // ajouter une largeur de 50px
-              deleteBtn.style.height = "25px"; // ajouter une hauteur de 50px
-              deleteBtn.style.backgroundImage = "url(assets/img/trash.svg)"; // ajouter l'image
+              deleteBtn.classList.add("absolute", "top-5", "right-2", "cursor-pointer");
+              deleteBtn.style.width = "25px"; 
+              deleteBtn.style.height = "25px"; 
+              
+              deleteBtn.style.backgroundImage = "url(assets/img/trash.svg)";
               deleteBtn.style.backgroundRepeat = "no-repeat"; // éviter la répétition de l'image
               deleteBtn.addEventListener("click", () => deleteBot(bot.id));
 
               const startBtn = document.createElement("button");
-              startBtn.classList.add("absolute", "top-5", "right-2", "cursor-pointer");
+              startBtn.classList.add("absolute", "top-5", "right-6", "mr-3", "cursor-pointer");
               startBtn.id = "start-btn-" + bot.id
-              startBtn.style.backgroundImage = "url(assets/img/start.svg)"; // ajouter l'image
-              startBtn.style.width = "25px"; // ajouter une largeur de 50px
-              startBtn.style.height = "25px"; // ajouter une hauteur de 50px
 
-              startBtn.style.backgroundRepeat = "no-repeat"; // éviter la répétition de l'image
+              fetch(`http://localhost:3000/checkServer/${bot.id}`)
+                .then(response => response.json())
+                .then(data => {
+                  const serverExists = data.exists;
+
+                  if (serverExists) {
+                    startBtn.style.backgroundImage = "url(assets/img/stop.svg)"; // ajouter l'image
+                  } else {
+                    startBtn.style.backgroundImage = "url(assets/img/start.svg)"; // ajouter l'image
+                  }
+                })
+                .catch(error => {
+                  console.error('Une erreur s\'est produite lors de la vérification du serveur :', error);
+                });
+
+
+              startBtn.style.width = "25px"; 
+              startBtn.style.height = "25px"; 
+
+              startBtn.style.backgroundRepeat = "no-repeat"; 
               startBtn.addEventListener("click", () => startBot(bot.id));
 
               const botName = document.createElement("h2");
@@ -110,6 +127,64 @@
                 botBrains.appendChild(label)
               }
 
+              const discordTokenContainer = document.createElement("div");
+              discordTokenContainer.classList.add("flex", "items-center", "mt-2");
+
+              const discordToken = document.createElement("input");
+              discordToken.type = "text";
+              discordToken.name = "discord_token";
+              discordToken.value = bot.discord_token || '';
+              discordToken.placeholder = "Discord Token (entrer pour enregister)";
+              discordToken.classList.add("py-1", "px-2", "border", "border-gray-300", "rounded-md", "w-full");
+
+              discordToken.addEventListener("keydown", (event) => {
+                if (event.keyCode === 13) {
+                  event.preventDefault();
+                  const token = discordToken.value;
+                  saveToken('discord',token,bot.id);
+                }
+              });
+
+              const discordStartBtn = document.createElement("button");
+              discordStartBtn.classList.add("start-button", "ml-2");
+              discordStartBtn.style.backgroundImage = "url(assets/img/start.svg)"; 
+              discordStartBtn.style.width = "20px"; 
+              discordStartBtn.style.height = "20px"; 
+              discordStartBtn.style.backgroundRepeat = "no-repeat"; 
+              discordStartBtn.addEventListener("click", () => startDiscordBot(bot));
+
+              discordTokenContainer.appendChild(discordToken);
+              discordTokenContainer.appendChild(discordStartBtn);
+
+              const mastodonTokenContainer = document.createElement("div");
+              mastodonTokenContainer.classList.add("flex", "items-center", "mt-2");
+
+              const mastodonToken = document.createElement("input");
+              mastodonToken.type = "text";
+              mastodonToken.name = "mastodon_token";
+              mastodonToken.value = bot.mastodon_token || '';
+              mastodonToken.placeholder = "Mastodon Token (entrer pour enregister)";
+              mastodonToken.classList.add("py-1", "px-2", "border", "border-gray-300", "rounded-md", "w-full");
+
+              mastodonToken.addEventListener("keydown", (event) => {
+                if (event.keyCode === 13) {
+                  event.preventDefault();
+                  const token = mastodonToken.value;
+                  saveToken('mastodon',token,bot.id);
+                }
+              });
+
+              const mastodonStartBtn = document.createElement("button");
+              mastodonStartBtn.classList.add("start-button", "ml-2");
+              mastodonStartBtn.style.backgroundImage = "url(assets/img/start.svg)";
+              mastodonStartBtn.style.width = "20px"; 
+              mastodonStartBtn.style.height = "20px"; 
+              mastodonStartBtn.style.backgroundRepeat = "no-repeat"; 
+              mastodonStartBtn.addEventListener("click", () => startMastodonBot(bot));
+
+              mastodonTokenContainer.appendChild(mastodonToken);
+              mastodonTokenContainer.appendChild(mastodonStartBtn);
+
               botElement.appendChild(startBtn);
               botElement.appendChild(deleteBtn);
               botElement.appendChild(botName);
@@ -117,6 +192,9 @@
               botElement.appendChild(botPort);
               botElement.appendChild(labelBrain);
               botElement.appendChild(botBrains);
+              botElement.appendChild(discordTokenContainer);
+              botElement.appendChild(mastodonTokenContainer);
+
 
               botElement.addEventListener("dblclick", () => {
                 fetch('http://localhost:3000/get-state-bot/' + bot.id, {
@@ -131,7 +209,7 @@
                       .then((response) => response.json())
                       .then((data) => console.log(data))
                       .catch((error) => console.error(error));
-                      window.open(`chat.html?port=${bot.port}`, `Conversation avec ${bot.name}`);
+                      window.open(`chat/${bot.port}`, `Conversation avec ${bot.name}`);
                     } else {
                       alert(`Il faut démarrer le bot ${bot.name} avant d'ouvrir la conversation avec lui`)
                     }
@@ -145,6 +223,54 @@
           .catch((err)=>{
             console.log(`ERROR : ${err}`);
           })
+      }
+
+      function startDiscordBot(bot){
+        fetch('http://localhost:3000/get-state-bot/' + bot.id, {
+                  method: 'GET',
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    if(data){
+                      fetch(`http://localhost:${bot.port}/load-brain/`, {
+                        method: 'GET'
+                      })
+                      .then((response) => response.json())
+                      .then((data) => console.log(data))
+                      .catch((error) => console.error(error));
+                      
+                      fetch(`http://localhost:${bot.port}/go-discord/`, {
+                        method: 'GET'
+                      })
+                      .then((response) => response.json())
+                      .then((data) => console.log(data))
+                      .catch((error) => console.error(error));
+                    } else {
+                      alert(`Il faut démarrer le bot ${bot.name} avant de l'envoyer sur Discord`)
+                    }
+                  })
+                  .catch(error => console.error(error));
+
+      }
+
+      function startMastodonBot(bot){
+        fetch('http://localhost:3000/get-state-bot/' + bot.id, {
+                  method: 'GET',
+                  })
+                  .then(response => response.json())
+                  .then(data => {
+                    if(data){
+                      fetch(`http://localhost:${port}/go-mastodon/`, {
+                        method: 'GET'
+                      })
+                      .then((response) => response.json())
+                      .then((data) => console.log(data))
+                      .catch((error) => console.error(error));
+                    } else {
+                      alert(`Il faut démarrer le bot ${bot.name} avant de l'envoyer sur Mastodon`)
+                    }
+                  })
+                  .catch(error => console.error(error));
       }
 
       function changeBrainChoice(idBot,input){
@@ -164,6 +290,33 @@
           .then((data) => console.log(data))
           .catch((error) => console.error(error));
         }
+      }
+
+      function saveToken(platform,token,bot_id){
+        let myHeaders = new Headers();
+			  myHeaders.append('Content-Type', 'application/json');
+
+        let myInit = { 
+          method: 'PUT',
+          headers: myHeaders,
+          mode: 'cors',
+          cache: 'default',
+          body: JSON.stringify({ platform, token })
+        };
+
+        let myURL = `http://localhost:3000/update_token/${bot_id}`;
+        
+        fetch(myURL,myInit)
+          .then((httpResponse)=>{
+            return httpResponse.text()
+          })
+          .then((returnString)=>{
+            displayBots();
+            console.log(`${returnString}`)
+          })
+          .catch((err)=>{
+            console.log(`ERROR : ${err}`);
+          })	      
       }
 
       function deleteBot(id){
@@ -192,7 +345,7 @@
           })		
         }
 
-        function startBot(id) {
+      function startBot(id) {
             const btn = document.getElementById(`start-btn-${id}`);
             fetch(`http://localhost:3000/start-stop/${id}`, { method: 'POST' })
                 .then(response => {
@@ -200,9 +353,9 @@
                         response.text().then(returnString => {
                             console.log(`${returnString}`)
                             if (returnString === 'Bot started') {
-                                btn.style.backgroundImage = "url(assets/img/stop.svg)";
+                                btn.style.backgroundImage = "url('/assets/img/stop.svg')";
                             } else {
-                                btn.style.backgroundImage = "url(assets/img/start.svg)";
+                                btn.style.backgroundImage = "url('/assets/img/start.svg')";
                             }
                         });
                     } else {
@@ -237,18 +390,51 @@
           <a href="#" class="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Accueil</a>
         </li>
         <li>
-          <a href="./add_bot.html" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Ajouter un bot</a>
+          <a href="/add_bot" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Ajouter un bot</a>
         </li>
         <li>
-          <a href="./login.html" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Se connecter</a>
+          <a id="logout_button" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Se déconnecter</a>
         </li>
       </ul>
     </div>
     </div>
   </nav>
 
+  <div class="mt-12 mb-6" style="margin-top: 120px; text-align: center;">
+    <h2 class="text-3xl font-bold">Bienvenue, <span id="username" class="text-3xl font-bold"></span> !</h2>
+  </div>
+  
   <div class="grid grid-cols-3 gap-4" id="grid-container">
   </div>
+
+  <script>
+
+document.addEventListener('DOMContentLoaded', () => {
+      const logoutButton = document.getElementById('logout_button');
+
+      logoutButton.addEventListener('click', async () => {
+        sessionStorage.removeItem('connected');
+        sessionStorage.removeItem('username');
+
+        const response = await fetch('http://localhost:3000/logout', {
+          method: 'POST'
+        });
+
+        window.location.href = '/login';
+      });
+
+      const isConnected = sessionStorage.getItem('connected') === 'true';
+
+      if (isConnected) {
+        const usernameElement = document.getElementById('username');
+        const username = sessionStorage.getItem('username');
+        usernameElement.textContent = username;
+      } else {
+        window.location.href = './login';
+      }
+    });
+
+  </script>
 
 	<!-- Liens vers les fichiers JavaScript de Flowbite -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.js"></script>
