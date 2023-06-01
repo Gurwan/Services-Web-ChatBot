@@ -13,12 +13,18 @@
 
     let botList;
 
+    /**
+     * Fonction appelée au chargement de la page appelant la fonction asynchrone affichant les bots
+     */
     function init(){
       botList = document.getElementById("grid-container")
 
       displayBots();
     }
 
+    /**
+     * Fonction affichant les bots allumés sur la page
+     */
     async function displayBots() {
         while (botList.firstChild) {
   				botList.removeChild(botList.firstChild);
@@ -85,7 +91,11 @@
           })
       }
 
-      function runConversation(bot){
+    /**
+     * Fonction permettant de lancer la page de conversation (chat) avec le bot passé en argument
+     * @param {*} bot bot avec qui converser
+     */
+    function runConversation(bot){
         fetch(`http://localhost:${bot.port}/load-brain/`, {
                         method: 'GET'
                       })
@@ -96,6 +106,7 @@
                       })
                       .catch((error) => console.error(error));
       }
+
   </script>
 </head>
 <body>
@@ -141,7 +152,8 @@
 
   <script>
 
-document.addEventListener('DOMContentLoaded', () => {
+  //déconnexion
+  document.addEventListener('DOMContentLoaded', () => {
       const logoutButton = document.getElementById('logout_button');
 
       logoutButton.addEventListener('click', async () => {

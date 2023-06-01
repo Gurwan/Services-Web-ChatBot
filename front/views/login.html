@@ -35,6 +35,7 @@
 
 		const form = document.querySelector('form');
 
+		//Envoi du contenu du formulaire de connexion
 		form.addEventListener('submit', async (event) => {
 			event.preventDefault();
 
@@ -49,12 +50,13 @@
 			});
 
 			if (response.ok) {
-
+				//si l'authentification est réussie on connecte l'utilisateur et on le redirige vers la racine
 				sessionStorage.setItem('connected', 'true');
 				sessionStorage.setItem('username', formData.get('username'));
 				window.location.href = '/';
 
 			} else {
+				//sinon on alerte l'utilisateur du soucis
 				sessionStorage.removeItem('connected');
 				alert('Identifiants invalides');
 			}

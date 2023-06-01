@@ -3,7 +3,7 @@
 <head>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
-	<title>TalkBot</title>
+	<title>TalkBot - Ajouter un bot</title>
 	<!-- Liens vers les fichiers CSS de Flowbite -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/flowbite/1.6.5/flowbite.min.css" rel="stylesheet" />
   <link rel="stylesheet" href="../assets/style.css">
@@ -52,10 +52,10 @@
     </form>
   </div>
   
-  
   <script>
     const form = document.querySelector("#form_add");
 
+    //deconnexion
     document.addEventListener('DOMContentLoaded', () => {
       const logoutButton = document.getElementById('logout_button');
 
@@ -81,11 +81,13 @@
       }
     });
 
+    //quand le formulaire est validé par l'utilisateur
     form.addEventListener('submit', (e) => {
       e.preventDefault();
 
       const data = {name: form.elements.bot_name.value};
 
+      //appel post
       fetch('http://localhost:3000', {
         method: 'POST',
         headers: {
@@ -96,6 +98,7 @@
       .then(response => response.json())
       .then(data => {
         console.log(data);
+        //redirige vers l'index
         window.location.replace("/");
       })
       .catch(error => console.error(error));
