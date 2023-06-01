@@ -457,7 +457,7 @@ app.post('/start-stop/:id', async (req,res) => {
 			app.get('/load-brain', async (req,res) => {
 				const bot = await botHandler.getBot(id);
 				const botRivescript = riveScriptMap.get(id);
-				if(bot != null){
+				if(bot != null && botRivescript != null){
 					bot.brain.forEach(br => {
 						const brPath = `${folderBrains}/${br}`;
 						if(botRivescript != null){
