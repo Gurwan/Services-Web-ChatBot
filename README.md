@@ -8,9 +8,8 @@
 </p>
 
 <p align="center">
-
-<iframe width="560" height="315" src="https://www.youtube.com/embed/nZyYYqj3Lbs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
+  
+https://github.com/Gurwan/TalkBot/assets/34190539/ebe3f8d4-8b60-42ab-ac6c-ca7ab0d4e892
 
 </p>
 
