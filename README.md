@@ -1,5 +1,14 @@
 # Application web de gestion et de conversation avec des bots.
 
+<p align="center">
+  <img src="https://github.com/Gurwan/TalkBot/blob/main/front/assets/img/bot.png" width="250" style="max-width:100%;">
+</p>
+<p align="center">
+  <strong>TalkBot</strong>
+</p>
+
+<hr> </hr>
+
 Ce projet a pour objectif de développer une application web permettant de créer des bots grâce à la technologie Rivescript et de pouvoir converser avec eux en choisissant leur(s) cerveau(x).
 
 ## Prérequis
