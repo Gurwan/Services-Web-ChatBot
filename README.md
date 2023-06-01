@@ -7,6 +7,10 @@
   <strong>TalkBot</strong>
 </p>
 
+<p align="center">
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/nZyYYqj3Lbs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</p>
+
 <hr> </hr>
 
 Ce projet a pour objectif de développer une application web permettant de créer des bots grâce à la technologie Rivescript et de pouvoir converser avec eux en choisissant leur(s) cerveau(x).
