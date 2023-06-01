@@ -117,7 +117,7 @@ class BotHandler {
      * Méthode permettant de récupérer le nom d'un bot grâce à son port
      * @param {*} port port du bot
      * @returns nom du bot s'il existe sinon null 
-    */
+     */
     async getBotNameByPort(port){
         port = parseInt(port);
         try {
