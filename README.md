@@ -4,7 +4,7 @@ Ce projet a pour objectif de développer une application web permettant de crée
 
 ## Prérequis
 
-- Framework NodeJS
+- Framework NodeJS (pour tout installer, tapez la commande : npm install dans /back)
   - bcrypt : pour le chiffrement sécurisé du mot de passe de l'utilisateur
   - cors : pour permettre aux différents serveurs de communiquer
   - express : framework basé sur NodeJS et permettant de construire notre application web
@@ -23,6 +23,25 @@ Ce projet a pour objectif de développer une application web permettant de crée
 3. Lancer le serveur avec la commande : npm run nodemon
 4. Accéder à l'application web via l'URL fournie par le serveur
 
+## Fonctionnalités implémentées
+
+- Création d'un compte utilisateur
+- Connexion obligatoire pour accéder au site
+- Création d'un ChatBot ayant des fonctionnalités minimales
+- Pouvoir lancer le serveur d'un ChatBot
+- Converser avec un bot
+- Sélectionner le(s) cerveau(x) du bot avant de le lancer
+- (BONUS) Pouvoir changer les cerveaux alors que le serveur est allumé (bot change de personnalité pendant conversation)
+- Le ChatBot garde en mémoire des informations personnelles
+- (BONUS) Utilisation de MongoDB pour mémoriser durablement ces informations
+- Intégration du ChatBot à Discord (testé)
+- Intégration du ChatBot à Mastodon (implémenté mais pas testé)
+- (BONUS) L'instance du ChatBot présent sur Discord partage sa mémoire avec celle de TalkBot
+- Les accès à Discord et Mastodon peuvent être réfutés en supprimant les tokens
+- Etats des ChatBot visible (les bots démarrés se trouvent dans l'onglet conversation et le bouton de démarrage change d'apparence en fonction de l'état du bot)
+- (BONUS) Les informations personnelles des utilisateurs sont partagées aux mémoires de chaque ChatBot
+
+
 ## Procédure de test
 
 ### Pour Discord 
@@ -35,8 +54,12 @@ Ce projet a pour objectif de développer une application web permettant de crée
 
 ### Pour Mastodon
 
-1. Connectez-vous à votre compte Botsin.space ou créer en un
-2. 
+Cette fonctionnalité n'a pas été testé car nous ne possédons pas de compte Mastodon validé. La demande a été effectuée il y a plusieurs jours sans succès. Voici tout de même la démarche de test prévue :
+1. Se connecter à son compte Mastodon
+2. Créer une application Mastodon depuis Botsin.space et autorisé un bot sur cette instance
+3. Copier l'access_token et le coller dans le champ mastodon token d'un bot sur TalkBot
+4. Lancer votre bot sur Mastodon en cliquant sur le bouton à droite du token mastodon.
+5. Pour parler avec lui (depuis Mastodon), envoyez-lui un message privé.
 
 ## Auteurs
 
