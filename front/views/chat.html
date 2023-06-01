@@ -11,28 +11,39 @@
 <body>
   <header class="bg-white shadow">
     <div class="mx-auto text-center max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-      <h1 class="text-7xl font-bold tracking-tight text-gray-900">TalkBot</h1>
+      <h1 id="h1-conversation" class="text-7xl font-bold tracking-tight text-gray-900">TalkBot</h1>
     </div>
   </header>
   <main class="flex bg-white justify-center">
     <div class="chat w-full m-4 bg-gray-100 rounded-lg">      
       <div class="messages m-4"></div>
       <div id="edge"></div>      
-      <form class="actions m-4">
-        <input type="text" class="w-full" placeholder="press 'Enter' to send…">
+      <form class="actions m-4 w-max">
+        <input type="text" class="w-max" placeholder="press 'Enter' to send…">
       </form>     
     </div>
   </main>
     
     <script src="https://unpkg.com/rivescript@latest/dist/rivescript.min.js"></script>
     <script>
+      var port = '{{port}}';
+
+      const h1 = document.getElementById("h1-conversation");
+      fetch('http://localhost:3000/get-name-bot/' + port, {
+                method: 'GET',
+                })
+                .then(response => response.json())
+                .then(data => {
+                  if(data){
+                    h1.textContent = "TalkBot avec " + data;
+                  }
+                })
+                .catch(error => console.error(error));
+
       const inputField = document.querySelector('.actions input');
-      const edgeElement = document.getElementById('edge');
 
       inputField.focus();
 
-      var port = '{{port}}';
-      
       const serverUrl = `http://localhost:${port}`;
       const messages = document.querySelector('.messages');
       const input = document.querySelector('input[type="text"]');
@@ -43,11 +54,9 @@
           const response = await fetch(`${serverUrl}/message/${message}`);
           const reply = await response.text();
           const messageHtml = `<div class="self">${message} </div><div class="bot">${reply}</div>`;
-          edgeElement.scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
-          window.scrollBy(0, -inputField.offsetHeight); // défilement vers le haut pour compenser le focus sur l'élément input
+          messages.scrollTop = messages.scrollHeight;
           inputField.focus();
           messages.insertAdjacentHTML('beforeend', messageHtml);
-          messages.scrollTop = messages.scrollHeight;
       }
 
       // Pour éviter que les espaces ne fassent échouer le dialogue

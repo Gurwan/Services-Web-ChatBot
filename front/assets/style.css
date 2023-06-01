@@ -5,7 +5,7 @@
    
    .chat {
         width: 80%;
-        height: 90%;
+        height: 70%;
         position: fixed;
         overflow: scroll;
    }
@@ -14,13 +14,13 @@
         position: fixed;
         bottom: 0;
         display: block;
-        width: 100%;
+        width: 80%;
    }
    
    .actions input{
         height: 30px;
+        width: max-content;
         display: block;
-        width: 100%;
         outline: 0;
         border-top: 0;
         border-left: 0;

@@ -114,6 +114,27 @@ class BotHandler {
     }
 
     /**
+     * Méthode permettant de récupérer le nom d'un bot grâce à son port
+     * @param {*} port port du bot
+     * @returns nom du bot s'il existe sinon null 
+    */
+    async getBotNameByPort(port){
+        port = parseInt(port);
+        try {
+          await this.client.connect();
+          const bot = await this.botsCollection.findOne({ port: port });
+          if (!bot) {
+            console.log(`Bot avec le port ${port} n'a pas été trouvé.`);
+            return null;
+          }
+          return bot.name;
+        } catch (error) {
+          console.error(error);
+          throw error;
+        }
+    }
+
+    /**
      * Méthode permettant de récupérer une nouvelle valeur pour le compteur passé en argument
      * Cette méthode est pratique car elle permet d'assigner un id et un port différent pour chaque bot
      * Cette méthode utilise des compteurs définies dans une collection counters

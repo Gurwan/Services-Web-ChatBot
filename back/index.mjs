@@ -230,6 +230,20 @@ app.get('/get-all-bots-started', async (req,res) => {
 })
 
 /**
+ * Méthode permettant de récupérer le nom d'un bot afin de l'afficher dans l'onglet conversation
+ */
+app.get('/get-name-bot/:port', async (req,res) => {
+	const port = req.params.port;
+
+	let botName = await botHandler.getBotNameByPort(port);
+	if(botName != null){
+		res.status(200).json(botName);
+	} else {
+		res.status(404).json({message: 'Aucun bot ne possède ce port'});
+	}
+})
+
+/**
  * Méthode permettant de récupérer tous les cerveaux présents dans le dossier brains de front
  */
 app.get('/get-brains', (req, res) => {
