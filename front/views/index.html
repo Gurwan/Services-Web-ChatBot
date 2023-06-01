@@ -13,12 +13,18 @@
 
     let botList;
 
+    /**
+     * Fonction appelée au chargement de la page et appelant la fonction asynchrone affichant les bots
+     */
     function init(){
       botList = document.getElementById("grid-container")
 
       displayBots();
     }
 
+    /**
+     * Fonction affichant les bots sur la page
+     */
     async function displayBots() {
         while (botList.firstChild) {
   				botList.removeChild(botList.firstChild);
@@ -49,9 +55,6 @@
 
         fetch(myURL+'get-all-bots',myInit)
           .then((httpResponse)=>{
-            for(let field of httpResponse.headers){
-              console.log(`raw = ${field}`);
-            }	
             return httpResponse.json()
           })
           .then((bots)=>{
@@ -118,7 +121,7 @@
                   input.checked = true;
                 }
 
-                input.addEventListener('change', () => changeBrainChoice(bot.id,input));
+                input.addEventListener('change', () => changeBrainChoice(bot.id,input,bot.port));
 
                 const label = document.createElement('label');
                 label.classList.add("label-brain")
@@ -194,29 +197,6 @@
               botElement.appendChild(botBrains);
               botElement.appendChild(discordTokenContainer);
               botElement.appendChild(mastodonTokenContainer);
-
-
-              botElement.addEventListener("dblclick", () => {
-                fetch('http://localhost:3000/get-state-bot/' + bot.id, {
-                  method: 'GET',
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                    if(data){
-                      fetch(`http://localhost:${bot.port}/load-brain/`, {
-                        method: 'GET'
-                      })
-                      .then((response) => response.json())
-                      .then((data) => console.log(data))
-                      .catch((error) => console.error(error));
-                      window.open(`chat/${bot.port}`, `Conversation avec ${bot.name}`);
-                    } else {
-                      alert(`Il faut démarrer le bot ${bot.name} avant d'ouvrir la conversation avec lui`)
-                    }
-                  })
-                  .catch(error => console.error(error));
-              })
-
               botList.appendChild(botElement);
             }
           })
@@ -225,74 +205,126 @@
           })
       }
 
-      function startDiscordBot(bot){
-        fetch('http://localhost:3000/get-state-bot/' + bot.id, {
-                  method: 'GET',
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                    if(data){
-                      fetch(`http://localhost:${bot.port}/load-brain/`, {
-                        method: 'GET'
-                      })
-                      .then((response) => response.json())
-                      .then((data) => console.log(data))
-                      .catch((error) => console.error(error));
-                      
-                      fetch(`http://localhost:${bot.port}/go-discord/`, {
-                        method: 'GET'
-                      })
-                      .then((response) => response.json())
-                      .then((data) => console.log(data))
-                      .catch((error) => console.error(error));
-                    } else {
-                      alert(`Il faut démarrer le bot ${bot.name} avant de l'envoyer sur Discord`)
-                    }
-                  })
-                  .catch(error => console.error(error));
+    /**
+     * Fonction permettant de connecter un bot à Discord
+     * @param {*} bot bot à connecter à Discord
+     */
+    function startDiscordBot(bot){
+      fetch('http://localhost:3000/checkServer/' + bot.id, {
+                method: 'GET',
+                })
+                .then(response => response.json())
+                .then(data => {
+                  if(data){
+                    fetch(`http://localhost:${bot.port}/load-brain/`, {
+                      method: 'GET'
+                    })
+                    .then((response) => response.json())
+                    .then((data) => console.log(data))
+                    .catch((error) => console.error(error));
+                    
+                    fetch(`http://localhost:${bot.port}/go-discord/`, {
+                      method: 'GET'
+                    })
+                    .then((response) => response.json())
+                    .then((data) => console.log(data))
+                    .catch((error) => console.error(error));
+                  } else {
+                    alert(`Il faut démarrer le bot ${bot.name} avant de l'envoyer sur Discord`)
+                  }
+                })
+                .catch(error => console.error(error));
 
-      }
+    }
 
-      function startMastodonBot(bot){
-        fetch('http://localhost:3000/get-state-bot/' + bot.id, {
-                  method: 'GET',
-                  })
-                  .then(response => response.json())
-                  .then(data => {
-                    if(data){
-                      fetch(`http://localhost:${port}/go-mastodon/`, {
-                        method: 'GET'
-                      })
-                      .then((response) => response.json())
-                      .then((data) => console.log(data))
-                      .catch((error) => console.error(error));
-                    } else {
-                      alert(`Il faut démarrer le bot ${bot.name} avant de l'envoyer sur Mastodon`)
-                    }
-                  })
-                  .catch(error => console.error(error));
-      }
+    /**
+     * Fonction permettant de connecter un bot à Mastodon
+     * @param {*} bot bot à connecter à Mastodon
+     */
+    function startMastodonBot(bot){
+      fetch('http://localhost:3000/checkServer/' + bot.id, {
+                method: 'GET',
+                })
+                .then(response => response.json())
+                .then(data => {
+                  if(data){
+                    fetch(`http://localhost:${port}/go-mastodon/`, {
+                      method: 'GET'
+                    })
+                    .then((response) => response.json())
+                    .then((data) => console.log(data))
+                    .catch((error) => console.error(error));
+                  } else {
+                    alert(`Il faut démarrer le bot ${bot.name} avant de l'envoyer sur Mastodon`)
+                  }
+                })
+                .catch(error => console.error(error));
+    }
 
-      function changeBrainChoice(idBot,input){
+    /**
+     * Fonction permettant de changer de cerveau (de l'ajouter s'il est coché ou de le supprimer s'il est décoché)
+     * @param {*} idBot identifiant du bot concerné
+     * @param {*} input input (case) du cerveau concerné
+     * @param {*} portBot port du bot
+     */
+    function changeBrainChoice(idBot,input,portBot){
         const brain = input.value;
         if (input.checked) {
           fetch(`http://localhost:3000/add-brain/${idBot}/${brain}`, {
             method: 'POST'
           })
           .then((response) => response.json())
-          .then((data) => console.log(data))
+          .then((data) => {
+            console.log(data)
+            reloadBrains(idBot,portBot)
+          })
           .catch((error) => console.error(error));
         } else {
           fetch(`http://localhost:3000/remove-brain/${idBot}/${brain}`, {
             method: 'DELETE'
           })
           .then((response) => response.json())
-          .then((data) => console.log(data))
+          .then((data) => {
+            console.log(data)
+            reloadBrains(idBot,portBot)
+          })
           .catch((error) => console.error(error));
         }
       }
 
-      function saveToken(platform,token,bot_id){
+    /**
+     * Fonction permettant de recharger les cerveaux (fonctionnalité de charger pendant la conversation)
+     * @param {*} idBot identifiant du bot concerné
+     * @param {*} portBot port du bot
+     */
+    function reloadBrains(idBot,portBot){
+        fetch(`http://localhost:3000/checkServer/${idBot}`)
+                .then(response => response.json())
+                .then(data => {
+                  const serverExists = data.exists;
+
+                  if (serverExists) {
+                    fetch(`http://localhost:${portBot}/load-brain/`, {
+                        method: 'GET'
+                      })
+                      .then((response) => response.json())
+                      .then((data) => {
+                        console.log(data)
+                      })
+                      .catch((error) => console.error(error));                  } 
+                })
+                .catch(error => {
+                  console.error('Une erreur s\'est produite lors de la vérification du serveur :', error);
+                });
+      }
+
+    /**
+     * Fonction permettant d'enregistrer un token lorsque l'utilisateur le valide (en appuyant sur Entrée)
+     * @param {*} platform Discord ou Mastodon
+     * @param {*} token valeur du token
+     * @param {*} bot_id identifiant du bot concerné
+     */
+    function saveToken(platform,token,bot_id){
         let myHeaders = new Headers();
 			  myHeaders.append('Content-Type', 'application/json');
 
@@ -319,7 +351,11 @@
           })	      
       }
 
-      function deleteBot(id){
+    /**
+     * Fonction permettant de supprimer un bot
+     * @param {*} id identifiant du bot concerné
+     */
+    function deleteBot(id){
         let myHeaders = new Headers();
 			  myHeaders.append('Content-Type', 'application/json');
 
@@ -345,7 +381,11 @@
           })		
         }
 
-      function startBot(id) {
+    /**
+     * Fonction permettant de lancer le serveur d'un bot afin de pouvoir converser avec lui ou l'envoyer sur une plateforme
+     * @param {*} id identifiant du bot concerné
+     */
+    function startBot(id) {
             const btn = document.getElementById(`start-btn-${id}`);
             fetch(`http://localhost:3000/start-stop/${id}`, { method: 'POST' })
                 .then(response => {
@@ -375,7 +415,6 @@
 <nav class="bg-white dark:bg-gray-900 fixed w-full z-20 top-0 left-0 border-b border-gray-200 dark:border-gray-600">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
     <a href="https://flowbite.com/" class="flex items-center">
-        <img src="https://st3.depositphotos.com/8950810/17657/v/600/depositphotos_176577880-stock-illustration-cute-smiling-funny-robot-chat.jpg" class="h-8 mr-3" alt="Flowbite Logo">
         <span class="self-center text-2xl font-semibold whitespace-nowrap dark:text-white">TalkBot</span>
     </a>
     <div class="flex md:order-2">
@@ -388,6 +427,9 @@
       <ul class="flex flex-col p-4 md:p-0 mt-4 font-medium border border-gray-100 rounded-lg bg-gray-50 md:flex-row md:space-x-8 md:mt-0 md:border-0 md:bg-white dark:bg-gray-800 md:dark:bg-gray-900 dark:border-gray-700">
         <li>
           <a href="#" class="block py-2 pl-3 pr-4 text-white bg-blue-700 rounded md:bg-transparent md:text-blue-700 md:p-0 md:dark:text-blue-500" aria-current="page">Accueil</a>
+        </li>
+        <li>
+          <a href="/conversations" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Conversations</a>
         </li>
         <li>
           <a href="/add_bot" class="block py-2 pl-3 pr-4 text-gray-900 rounded hover:bg-gray-100 md:hover:bg-transparent md:hover:text-blue-700 md:p-0 md:dark:hover:text-blue-500 dark:text-white dark:hover:bg-gray-700 dark:hover:text-white md:dark:hover:bg-transparent dark:border-gray-700">Ajouter un bot</a>
@@ -409,7 +451,8 @@
 
   <script>
 
-document.addEventListener('DOMContentLoaded', () => {
+    //déconnexion
+    document.addEventListener('DOMContentLoaded', () => {
       const logoutButton = document.getElementById('logout_button');
 
       logoutButton.addEventListener('click', async () => {

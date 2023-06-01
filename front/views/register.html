@@ -29,6 +29,7 @@
   <script>
     const form = document.querySelector('form');
 
+    //Envoi des données d'inscription à l'API
     form.addEventListener('submit', async (event) => {
       event.preventDefault();
 
@@ -45,9 +46,11 @@
       });
 
       if (response.ok) {
+        //si l'inscription est un succès
         alert('Inscription réussie');
         window.location.href = '/login';
       } else {
+        //sinon on informe l'utilisateur de l'échec de l'inscription
         alert('Erreur lors de l\'inscription');
       }
     });

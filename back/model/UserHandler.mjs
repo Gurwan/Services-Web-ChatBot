@@ -1,14 +1,22 @@
 import {User} from "./User.mjs";
 import {MongoClient} from 'mongodb';
 
+/**
+ * Classe servant de gestionnaire aux utilisateurs
+ */
 class UserHandler {
     constructor(){
+        //adresse de la base de données MongoDB
         this.dbURL = "mongodb://localhost:27017/";
+        //nom de notre base de données
         this.dbName = "penavaire_delaunay_bot";
         this.client = new MongoClient(this.dbURL, { useNewUrlParser: true, useUnifiedTopology: true });
         this.usersCollection = null;
     }
 
+    /**
+    * Méthode permettant d'initialiser la connexion à la base de données
+    */
     async connectToDatabase(){
         try {
             await this.client.connect();
@@ -37,6 +45,11 @@ class UserHandler {
         }
     }
 
+    /**
+     * Méthode permettant d'ajouter un utilisateur à la base de données
+     * @param {User} user utilisateur à ajouter en base de données
+     * @returns string indiquant que l'opération est un succès
+     */
     async createUser(user){
         const newUser = { username: user.username, password: user.password, data: user.data };
         await this.usersCollection.insertOne(newUser, function(err, res) {
@@ -46,6 +59,12 @@ class UserHandler {
         return "L'utilisateur " + newUser.username + " a été crée";
     }
 
+    /**
+     * Méthode permettant de mettre à jour les données d'un utilisateur
+     * @param {*} username nom d'utilisateur de l'utilisateur 
+     * @param {*} data nouvelles données de l'utilisateur
+     * @returns string indiquant que l'opération est un succès
+     */
     async updateData(username,data){
       try {
         await this.client.connect();
@@ -56,22 +75,11 @@ class UserHandler {
       }
     }
 
-    async getUser(user_arg) {
-        try {
-          await this.client.connect();
-          const user = await this.usersCollection.findOne({ username: user_arg.username });
-          if (!user) {
-            console.log(`L'utilisateur dont le username est ${user_arg.username} n'existe pas.`);
-            return null;
-          }
-          const result = new User(user.username,user.password,user.data);
-          return result;
-        } catch (error) {
-          console.error(error);
-          throw error;
-        }
-    }
-
+    /**
+     * Méthode permettant de récupérer un utilisateur par son nom d'utilisateur
+     * @param {*} user_arg nom d'utilisateur de l'utilisateur recherché 
+     * @returns l'utilisateur si trouvé sinon null 
+     */
     async getUserByUsername(user_arg) {
         try {
           await this.client.connect();
