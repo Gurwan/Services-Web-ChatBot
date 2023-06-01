@@ -8,7 +8,7 @@
 </p>
 
 <p align="center">
-[![Vidéo de démonstration](https://img.youtube.com/vi/nZyYYqj3Lbs/0.jpg)](https://youtu.be/nZyYYqj3Lbs)
+  <iframe width="560" height="315" src="https://www.youtube.com/embed/nZyYYqj3Lbs" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 </p>
 
 <hr> </hr>
